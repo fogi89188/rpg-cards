@@ -144,6 +144,12 @@ var autoBoldRules = [
         pattern: /^property\s*\|\s*([^|:]+):?\s*/gm,
         replacement: 'property | <b>$1:</b> ',
     },
+
+    // Bold property names (like "Casting time", "Range", "Components")
+    {
+        pattern: /^description\s*\|\s*([^|:]+):?\s*/gm,
+        replacement: 'description | <b>$1:</b> ',
+    },
     
     // To add a new rule, add a comma after the closing brace above and add your new rule:
     /*

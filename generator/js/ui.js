@@ -1330,3 +1330,45 @@ function showToast(message, type = 'success') {
         }
     }, 3000);
 }
+
+// Theme toggle: consistent dark mode using CSS variables and persistent user preference
+(function() {
+    const THEME_KEY = 'rpgcards-theme';
+    const root = document.documentElement;
+    const toggleId = 'theme-toggle';
+
+    function applyTheme(theme) {
+        if (theme === 'dark') {
+            root.setAttribute('data-theme', 'dark');
+            const btn = document.getElementById(toggleId);
+            if (btn) { btn.setAttribute('aria-pressed', 'true'); btn.textContent = '☀️'; }
+        } else {
+            root.removeAttribute('data-theme');
+            const btn = document.getElementById(toggleId);
+            if (btn) { btn.setAttribute('aria-pressed', 'false'); btn.textContent = '🌙'; }
+        }
+    }
+
+    function initTheme() {
+        const stored = localStorage.getItem(THEME_KEY);
+        if (stored) {
+            applyTheme(stored);
+            return;
+        }
+        // follow system preference by default
+        const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        applyTheme(prefersDark ? 'dark' : 'light');
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const btn = document.getElementById(toggleId);
+        if (!btn) { initTheme(); return; }
+        initTheme();
+        btn.addEventListener('click', function() {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            const next = isDark ? 'light' : 'dark';
+            applyTheme(next);
+            localStorage.setItem(THEME_KEY, next);
+        });
+    });
+})();

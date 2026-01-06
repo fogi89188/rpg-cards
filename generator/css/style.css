@@ -1,3 +1,154 @@
+/* Theme variables */
+:root{
+  --bg: #ffffff;
+  --text: #111827;
+  --muted: #6b7280;
+  --card-bg: #ffffff;
+  --panel-bg: #f7f7f7;
+  --accent: #1966d9;
+  --border: #e5e7eb;
+  --hover-bg: rgba(0,0,0,0.3);
+}
+
+/* Dark theme overrides (brighter grayscale) */
+[data-theme="dark"]{
+  --bg: #1b1b1b;         
+  --text: #f7f7f7;       
+  --muted: #6b7280;      
+  --card-bg: #141414;    
+  --panel-bg: #1f1f1f;   
+  --accent: #1966d9;     
+  --border: #2f2f2f;     
+  --hover-bg: rgba(255,255,255,0.3);
+}
+
+/* Make preview container match page background */
+.preview-container { background-color: var(--bg) !important; }
+
+/* Basic usage of theme variables */
+body{
+  background: var(--bg);
+  color: var(--text);
+}
+.panel, .panel-default, .panel-heading, .card-footer {
+  background: var(--panel-bg) !important;
+  border-color: var(--border) !important;
+  color: var(--text) !important;
+}
+
+.panel-title, .panel-title a {
+  color: var(--text) !important;
+}
+
+.panel-heading a { background: transparent !important; }
+.card-element, .card-fill, .card-property-line {
+  background: var(--card-bg);
+}
+a, .btn-primary {
+  color: var(--accent);
+}
+
+/* Buttons & interactive elements - theme aware */
+.btn, .btn-default, .btn-block, .action-button, .input-group-addon, .input-group .btn, .btn-secondary {
+  background-color: var(--panel-bg) !important;
+  background-image: none !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
+}
+
+/* Dropdown toggles (color selectors, big dropdowns) should also match theme */
+.dropdown-toggle, .dropdown-colorselector > a {
+  background-color: var(--panel-bg) !important;
+  background-image: none !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
+}
+
+.btn-primary, .btn-info {
+  background-color: var(--accent) !important;
+  background-image: none !important;
+  color: white !important;
+  border-color: var(--accent) !important;
+}
+
+.btn:hover, .btn:focus, .action-button:hover {
+  filter: brightness(0.95);
+}
+
+/* Color selector button styling to match theme (keep its background color swatch visible) */
+.btn-colorselector {
+  border: 1px solid var(--border);
+  outline: none;
+  background-image: none !important;
+}
+
+/* Panel heading links */
+#accordion .panel-heading a {
+  color: var(--text);
+}
+.small-muted { color: var(--muted); }
+
 .game-icon {    
     line-height: normal;
 }
+
+/* Form controls: follow theme (inputs, textareas, selects) */
+input, textarea, select, .form-control {
+  background: var(--panel-bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+/* Preview cards: limit lightness to textual elements (subtitle/description) so cards keep their chosen background */
+.preview-container .card .card-subtitle,
+.preview-container .card .card-description-line,
+.preview-container .card .card-description-text,
+.preview-container .card .card-property-line,
+.preview-container .card .card-bullet-line,
+.preview-container .card .card-section {
+  background: transparent !important; /* keep card container background visible */
+  color: black !important;
+}
+
+/* Generated output pages/cards: ensure textual elements are readable in output but do NOT override card-level background color */
+page .card .card-subtitle,
+.page-preview .card .card-subtitle,
+page .card .card-description-line,
+.page-preview .card .card-description-line,
+page .card .card-description-text,
+.page-preview .card .card-description-text,
+page .card .card-property-line,
+.page-preview .card .card-property-line,
+page .card .card-bullet-line,
+.page-preview .card .card-bullet-line,
+page .card .card-section,
+.page-preview .card .card-section {
+  background: transparent !important;
+  color: black !important;
+}
+
+/* Fix: card fill regions should be white in preview to match print output */
+.preview-container .card .card-fill {
+  background: white !important;
+  color: black !important;
+  border-color: #ddd !important;
+}
+
+/* Generated output pages: ensure fills are white in output pages (do not override back gradient) */
+page .card .card-fill,
+.page-preview .card .card-fill {
+  background: white !important;
+  color: black !important;
+  border-color: #ddd !important;
+}
+
+/* Theme toggle button */
+#theme-toggle{
+  margin-left: 12px;
+  font-size: 16px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+#theme-toggle:focus{ outline: 2px solid var(--accent); outline-offset: 2px; }

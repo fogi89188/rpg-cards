@@ -142,7 +142,8 @@ html, body {
 .deck-cards-list {
    height: calc(27px * 15);
    overflow-y: auto;
-   border: 1px solid #ddd;
+   border: 1px solid var(--border);
+   background: var(--panel-bg);
 }
 
 .deck-cards-list .radio {
@@ -152,14 +153,27 @@ html, body {
 .deck-cards-list .radio label {
   display: block;
   padding: 3.5px 7px;
+  color: var(--text);
 }
 
 .deck-cards-list .radio label:hover {
-  background-color: #e0e0e0;
+  background-color: var(--hover-bg) !important;
+  color: var(--text) !important;
+}
+
+/* Use theme-aware hover for dropdowns, move buttons and action buttons */
+.dropdown-menu > li > a:hover,
+.dropdown-colorselector > .dropdown-menu > li > .color-btn:hover,
+.move-button:hover,
+.action-button:hover,
+.move-button:focus,
+.action-button:focus {
+  background-color: var(--hover-bg) !important;
+  color: var(--text) !important;
 }
 
 .deck-cards-list .radio:has(:checked) label {
-  background-color: #337ab7;
+  background-color: var(--accent);
   color: #ffffff;
 }
 
