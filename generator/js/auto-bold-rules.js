@@ -27,7 +27,7 @@ var autoBoldRules = [
     
     // Bold damage types
     {
-        pattern: /(fire|cold|lightning|thunder|acid|poison|necrotic|radiant|psychic|force|piercing|slashing|bludgeoning)/gi,
+        pattern: /\s+(fire|cold|lightning|thunder|acid|poison|necrotic|radiant|psychic|force|piercing|slashing|bludgeoning)\s+/gi,
         replacement: '<b>$1</b>',
     },
 
@@ -99,7 +99,7 @@ var autoBoldRules = [
 
     // Targeting modifiers and actions
     {
-        pattern: /(choose|each|every|within|range|regains?|saves?|loses?)/gi,
+        pattern: /\s+(choose|each|every|within|range|regains?|saves?|loses?)\s+/gi,
         replacement: '<b>$1</b>',
     },
     
