@@ -37,6 +37,7 @@
     <script type="text/javascript" src="js/fields/fields_page.js"></script>
     <script type="text/javascript" src="js/fields/fields_default.js"></script>
     <script type="text/javascript" src="js/fields/fields_card.js"></script>
+    <script type="text/javascript" src="js/auto-bold-rules.js"></script>
     <script type="text/javascript" src="js/cards.js"></script>
     <script type="text/javascript" src="js/colors.js"></script>
     <script type="text/javascript" src="js/icons.js"></script>
@@ -58,25 +59,7 @@
 
 <body>
     <div class="container-fluid">
-        <!--<h1 class="page-header">RPG card generator</h1>-->
-        
-        <div class="row">
-            <div class="alert alert-danger alert-dismissible" role="alert">
-                <button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span
-                        class="sr-only">Close</span></button>
-                <strong>Important</strong>
-                October 1, 2025 — The app’s address may change in the coming months. Please make sure to save your cards as local files. Thank you!.
-            </div>
-        </div>
-        <div class="row">
-            <div class="alert alert-warning alert-dismissible" role="alert">
-                <button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span
-                        class="sr-only">Close</span></button>
-                <strong>Note</strong>
-                Click on "Help" to display some information about how to use this generator.
-                However, if you find a bug or have a feature request, please note that <strong>this project is rarely mantained</strong>.
-            </div>
-        </div>
+        <h1 class="page-header">RPG card generator</h1>
         <div class="row">
             <div class="col-md-12 col-lg-3" style="overflow-y: auto;">
 
@@ -805,16 +788,7 @@
                     <div class="form-group">
                         <label for="card-title-size" class="col-sm-2 control-label" style="font-weight: normal;">Title size</label>
                         <div class="col-sm-10">
-                            <select class="form-control first-option-placeholder" id="card-title-size">
-                                <option value="">Default title size</option>
-                                <option value="16">16pt</option>
-                                <option value="15">15pt</option>
-                                <option value="14">14pt</option>
-                                <option value="13">13pt (initial)</option>
-                                <option value="12">12pt</option>
-                                <option value="11">11pt</option>
-                                <option value="10">10pt</option>
-                            </select>
+                            <input type="number" class="form-control" id="card-title-size" placeholder="Title size (e.g. 13, 14, 16)" min="6" max="72" step="0.5">
                         </div>
                     </div>
                     <div class="form-group">
@@ -908,21 +882,16 @@
                             </div>
                         </div>
                         <div class="col-sm-10">
+                            <div class="form-group" style="margin-bottom: 10px;">
+                                <button type="button" class="btn btn-primary btn-sm" id="auto-bold-btn">Auto Bold</button>
+                            </div>
                             <textarea class="form-control" rows="14" id="card-contents"></textarea>
                         </div>
                     </div>
                     <div class="form-group">
                         <label for="card-font-size" class="col-sm-2 control-label" style="font-weight: normal;">Text size</label>
                         <div class="col-sm-10">
-                            <select class="form-control" id="card-font-size" data-property="card_font_size">
-                                <option value="12">12px (initial)</option>
-                                <option value="11">11px</option>
-                                <option value="inherit">10.66px (inherit: 8pt)</option>
-                                <option value="10">10px</option>
-                                <option value="9">9px</option>
-                                <option value="smaller">8.88px (smaller)</option>
-                                <option value="8">8px</option>
-                            </select>
+                            <input type="number" class="form-control" id="card-font-size" data-property="card_font_size" placeholder="Text size (e.g. 8, 10, 12)" min="6" max="72" step="0.5">
                         </div>
                     </div>
                     <div class="form-group">

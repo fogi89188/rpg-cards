@@ -1210,7 +1210,123 @@ $(document).ready(function () {
     $("#button-move-bottom").click(ui_move_bottom);
     $("#button-move-up").click(ui_move_up);
     $("#button-move-down").click(ui_move_down);
+    
+    // Auto Bold button handler
+    $("#auto-bold-btn").click(applyAutoBold);
 
     ui_update_card_list();
     });
 });
+
+// Auto Bold functionality
+function applyAutoBold() {
+    console.log('Auto Bold button clicked'); // Debug log
+    
+    var contentsTextarea = document.getElementById('card-contents');
+    if (!contentsTextarea) {
+        console.log('Contents textarea not found');
+        return;
+    }
+    
+    var text = contentsTextarea.value;
+    var originalText = text;
+    
+    console.log('Original text:', text); // Debug log
+    
+    // Check if autoBoldRules is defined
+    if (typeof autoBoldRules === 'undefined') {
+        console.error('autoBoldRules is not defined');
+        alert('Auto Bold rules not loaded. Please refresh the page.');
+        return;
+    }
+    
+    console.log('Number of rules:', autoBoldRules.length); // Debug log
+    
+    // Per-line processing: clear HTML and apply rules per line to avoid tags moving across lines
+    console.log('Processing text per line to avoid cross-line tag merging...');
+    var lines = text.split('\n');
+    var changed = false;
+
+    var processedLines = lines.map(function(line, lineIndex) {
+        var originalLine = line;
+
+        // Step A: Remove any existing HTML tags for processing (we'll reinsert <b> tags only via rules)
+        var cleaningIterations = 0;
+        var maxIterations = 50;
+        do {
+            var previousLine = line;
+            line = line.replace(/<[^>]*>/g, '');
+            cleaningIterations++;
+            if (cleaningIterations > maxIterations) {
+                console.warn('Stopped cleaning line after', maxIterations, 'iterations to prevent infinite loop');
+                break;
+            }
+        } while (line !== previousLine);
+
+        // Apply each regex rule to this single line
+        autoBoldRules.forEach(function(rule, index) {
+            var beforeReplace = line;
+            line = line.replace(rule.pattern, rule.replacement);
+            if (beforeReplace !== line) {
+                console.log('Line', lineIndex + 1, 'Rule', index + 1, 'applied:', rule.description || 'No description');
+            }
+        });
+
+        // Post-processing per-line: Clean up bold tags but only within the line
+        // 1) Remove nested bold tags
+        do {
+            var beforeNested = line;
+            line = line.replace(/<b><b>([^<]*)<\/b><\/b>/gi, '<b>$1</b>');
+            line = line.replace(/<b><b><b>([^<]*)<\/b><\/b><\/b>/gi, '<b>$1</b>');
+        } while (line !== beforeNested);
+
+        // 2) Merge adjacent bold tags (they are on the same line only)
+        line = line.replace(/<\/b><b>/gi, '');
+
+        // 3) Merge bold tags separated only by whitespace
+        line = line.replace(/<\/b>\s+<b>/gi, ' ');
+
+        // 4) Ensure we don't leave leading or trailing stray closing/opening tags
+        line = line.replace(/^<\/b>\s*/i, '');
+        line = line.replace(/\s*<b>$/i, '');
+
+        if (line !== originalLine) changed = true;
+        return line;
+    });
+
+    text = processedLines.join('\n');
+    console.log('Per-line processing completed. Any changes:', changed);
+    console.log('Final text:', text); // Debug log
+    
+    // Update the textarea (even if no bold rules matched, we still cleared formatting)
+    if (text !== originalText) {
+        contentsTextarea.value = text;
+        // Trigger change event to update the card preview
+        $(contentsTextarea).trigger('change');
+        console.log('Text updated successfully');
+        showToast('Auto-bold applied successfully!', 'success');
+    } else {
+        console.log('No changes made to text');
+        showToast('No formatting changes needed.', 'info');
+    }
+}
+
+// Simple toast notification function
+function showToast(message, type = 'success') {
+    var toastContainer = document.getElementById('toast-container');
+    if (!toastContainer) return;
+    
+    var toast = document.createElement('div');
+    toast.className = 'alert alert-' + type + ' alert-dismissible';
+    toast.style.cssText = 'margin-bottom: 10px; max-width: 300px;';
+    toast.innerHTML = message + '<button type="button" class="close" onclick="this.parentElement.remove()"><span>&times;</span></button>';
+    
+    toastContainer.appendChild(toast);
+    
+    // Auto-remove after 3 seconds
+    setTimeout(function() {
+        if (toast.parentNode) {
+            toast.parentNode.removeChild(toast);
+        }
+    }, 3000);
+}
