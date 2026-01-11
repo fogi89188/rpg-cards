@@ -1248,22 +1248,12 @@ function applyAutoBold() {
     var changed = false;
 
     var processedLines = lines.map(function(line, lineIndex) {
-        var originalLine = line;
+        originalLine = line;
 
-        // Step A: Remove any existing HTML tags for processing (we'll reinsert <b> tags only via rules)
-        var cleaningIterations = 0;
-        var maxIterations = 50;
-        do {
-            var previousLine = line;
-            line = line.replace(/<[^>]*>/g, '');
-            cleaningIterations++;
-            if (cleaningIterations > maxIterations) {
-                console.warn('Stopped cleaning line after', maxIterations, 'iterations to prevent infinite loop');
-                break;
-            }
-        } while (line !== previousLine);
+        // 1. Clear existing <b>...</b> tags
+        line = line.replace(/<\/?b>/gi, '');
 
-        // Apply each regex rule to this single line
+        // 2. Apply each regex rule to this single line
         autoBoldRules.forEach(function(rule, index) {
             var beforeReplace = line;
             line = line.replace(rule.pattern, rule.replacement);
@@ -1272,41 +1262,33 @@ function applyAutoBold() {
             }
         });
 
-        // Post-processing per-line: Clean up bold tags but only within the line
-        // 1) Remove nested bold tags
-        do {
-            var beforeNested = line;
-            line = line.replace(/<b><b>([^<]*)<\/b><\/b>/gi, '<b>$1</b>');
-            line = line.replace(/<b><b><b>([^<]*)<\/b><\/b><\/b>/gi, '<b>$1</b>');
-        } while (line !== beforeNested);
-
-        // 2) Merge adjacent bold tags (they are on the same line only)
+        // 3. Clean up adjacent or misplaced bold tags
         line = line.replace(/<\/b><b>/gi, '');
-
-        // 3) Merge bold tags separated only by whitespace
         line = line.replace(/<\/b>\s+<b>/gi, ' ');
-
-        // 4) Ensure we don't leave leading or trailing stray closing/opening tags
         line = line.replace(/^<\/b>\s*/i, '');
         line = line.replace(/\s*<b>$/i, '');
+        line = line.replace(/<b>\s*<\/b>/gi, '');
+        
+        // 4. Remove ONLY nested <b> tags within other <b> tags
+        do {
+            var before = line;
+            // Match <b>content <b>nested</b> more</b> → <b>content nested more</b>
+            line = line.replace(/<b[^>]*>((?:[^<]|\n|<(?!b\b)[^>]*>)*?)<b[^>]*>((?:[^<]|\n|<(?!b\b)[^>]*>)*?)<\/b>((?:[^<]|\n|<(?!b\b)[^>]*>)*?)<\/b>/gi, '$1$2$3');
+        } while (line !== before);
 
         if (line !== originalLine) changed = true;
+
         return line;
     });
-
-    text = processedLines.join('\n');
     console.log('Per-line processing completed. Any changes:', changed);
     console.log('Final text:', text); // Debug log
     
-    // Update the textarea (even if no bold rules matched, we still cleared formatting)
+    text = processedLines.join('\n');
     if (text !== originalText) {
         contentsTextarea.value = text;
-        // Trigger change event to update the card preview
         $(contentsTextarea).trigger('change');
-        console.log('Text updated successfully');
         showToast('Auto-bold applied successfully!', 'success');
     } else {
-        console.log('No changes made to text');
         showToast('No formatting changes needed.', 'info');
     }
 }
