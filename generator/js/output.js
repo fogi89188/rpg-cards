@@ -27,12 +27,37 @@ function insertCards(style, html, callback) {
     
         document.body.appendChild(div);
         
+        // Auto-fit all card titles
+        autofitCardTitles();
+        
         if (callback) {
             requestAnimationFrame(() => {
                 requestAnimationFrame(callback);
             });
         }
     })();
+}
+
+function autofitCardTitles() {
+    // Auto-fit all card titles to their containers
+    document.querySelectorAll('.card-title').forEach(titleElement => {
+        const maxFontSize = 16; // Maximum font size in pixels
+        const minFontSize = 8;  // Minimum font size in pixels
+        
+        // Reset to max size
+        titleElement.style.fontSize = maxFontSize + 'px';
+        
+        // Get the container width (accounting for padding)
+        const containerWidth = titleElement.offsetWidth;
+        const textWidth = titleElement.scrollWidth;
+        
+        // If text doesn't fit, scale it down
+        if (textWidth > containerWidth) {
+            const ratio = containerWidth / textWidth;
+            const newSize = Math.max(minFontSize, Math.floor(maxFontSize * ratio));
+            titleElement.style.fontSize = newSize + 'px';
+        }
+    });
 }
 
 window.addEventListener("message", receiveMessage, false);
