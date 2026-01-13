@@ -1089,14 +1089,14 @@ function card_generate_crop_marks(card_data, options, params = {}) {
   if (!options.crop_marks || isPreview) return '';
 
   return `
-      <div class="crop-mark crop-mark-top-left-v hide" style="left:${bleed_width_half};"></div>
-      <div class="crop-mark crop-mark-top-right-v hide" style="right:${bleed_width_half};"></div>
-      <div class="crop-mark crop-mark-bottom-left-v hide" style="left:${bleed_width_half};"></div>
-      <div class="crop-mark crop-mark-bottom-right-v hide" style="right:${bleed_width_half};"></div>
-      <div class="crop-mark crop-mark-top-left-h hide" style="top:${bleed_height_half};"></div>
-      <div class="crop-mark crop-mark-bottom-left-h hide" style="bottom:${bleed_height_half};"></div>
-      <div class="crop-mark crop-mark-top-right-h hide" style="top:${bleed_height_half};"></div>
-      <div class="crop-mark crop-mark-bottom-right-h hide" style="bottom:${bleed_height_half};"></div>
+      <div class="crop-mark crop-mark-top-left-v" style="left:${bleed_width_half};"></div>
+      <div class="crop-mark crop-mark-top-right-v" style="right:${bleed_width_half};"></div>
+      <div class="crop-mark crop-mark-bottom-left-v" style="left:${bleed_width_half};"></div>
+      <div class="crop-mark crop-mark-bottom-right-v" style="right:${bleed_width_half};"></div>
+      <div class="crop-mark crop-mark-top-left-h" style="top:${bleed_height_half};"></div>
+      <div class="crop-mark crop-mark-bottom-left-h" style="bottom:${bleed_height_half};"></div>
+      <div class="crop-mark crop-mark-top-right-h" style="top:${bleed_height_half};"></div>
+      <div class="crop-mark crop-mark-bottom-right-h" style="bottom:${bleed_height_half};"></div>
   `;
 }
 

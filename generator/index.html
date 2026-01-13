@@ -24,6 +24,8 @@
     <!-- Library: Color picker -->
     <link href="lib/colorpicker/css/bootstrap-colorselector.css" rel="stylesheet" />
     <script type="text/javascript" src="lib/colorpicker/js/bootstrap-colorselector.js" charset="utf-8"></script>
+    <!-- Library: html2canvas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <!-- Library: DOMPurify -->
     <script type="text/javascript" src="lib/dompurify/purify.min.js" charset="utf-8"></script>
     <!-- Data -->
@@ -960,6 +962,20 @@
             <div class="col-md-12 col-lg-4" style="overflow-y: auto;">
                 <!--<h3>Preview</h3>-->
                 <div id="preview-container" class="preview-container">
+                </div>
+                <div style="padding: 10px;">
+                    <div class="row">
+                        <div class="col-xs-6">
+                            <button type="button" class="btn btn-success btn-block" id="button-download-card-front">
+                                <span class="glyphicon glyphicon-download-alt"></span> Front
+                            </button>
+                        </div>
+                        <div class="col-xs-6">
+                            <button type="button" class="btn btn-success btn-block" id="button-download-card-back">
+                                <span class="glyphicon glyphicon-download-alt"></span> Back
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

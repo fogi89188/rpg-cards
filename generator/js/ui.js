@@ -833,6 +833,78 @@ function ui_filter_execute() {
     ui_update_card_list();
 }
 
+function ui_download_card(face = 'front') {
+    const selectedCard = ui_selected_card();
+    if (!selectedCard) {
+        alert('Please select a card to download');
+        return;
+    }
+
+    const previewContainer = document.getElementById('preview-container');
+    if (!previewContainer) {
+        alert('No preview container found');
+        return;
+    }
+
+    const cards = previewContainer.querySelectorAll('.card');
+    if (!cards || cards.length === 0) {
+        alert('No cards found in preview');
+        return;
+    }
+
+    const cardElement = face === 'back' ? cards[1] : cards[0];
+    if (!cardElement) {
+        alert(`No card ${face} preview available`);
+        return;
+    }
+
+    const buttonId = face === 'back' ? 'button-download-card-back' : 'button-download-card-front';
+    const button = document.getElementById(buttonId);
+    const originalText = button.innerHTML;
+    button.innerHTML = '<span class="glyphicon glyphicon-hourglass"></span> Generating...';
+    button.disabled = true;
+
+    Promise.all([
+        document.fonts.load('12px "Noto Sans"'),
+        document.fonts.load('bold 12px "Noto Sans"'),
+        document.fonts.load('italic 12px "Noto Sans"'),
+        document.fonts.load('italic bold 12px "Noto Sans"'),
+        document.fonts.load('bold 12px Lora'),
+        document.fonts.ready
+    ]).then(() => {
+        setTimeout(() => {
+            html2canvas(cardElement, {
+                scale: 3,
+                useCORS: true,
+                allowTaint: true,
+                backgroundColor: null,
+                logging: false,
+                onclone: (clonedDoc) => {
+                    const clonedElement = clonedDoc.querySelector('.card');
+                    if (clonedElement) {
+                        clonedElement.style.fontFamily = window.getComputedStyle(cardElement).fontFamily;
+                    }
+                }
+            }).then(canvas => {
+                const link = document.createElement('a');
+                const cardName = selectedCard.title || 'card';
+                const sanitizedName = cardName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+                link.download = `${sanitizedName}_${face}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                
+                button.innerHTML = originalText;
+                button.disabled = false;
+            }).catch(error => {
+                console.error('Error generating card image:', error);
+                alert('Failed to generate card image. Please try again.');
+                button.innerHTML = originalText;
+                button.disabled = false;
+            });
+        }, 500);
+    });
+}
+
 function ui_apply_default_color_front() {
     const k = 'color_front';
     const v = card_options.default_color_front;
@@ -1146,6 +1218,8 @@ $(document).ready(function () {
     $("#button-save").click(ui_save_file);
     $("#button-sort").click(ui_sort);
     $("#button-filter").click(ui_filter);
+    $("#button-download-card-front").click(() => ui_download_card('front'));
+    $("#button-download-card-back").click(() => ui_download_card('back'));
     $("#button-add-card").click(ui_add_new_card);
     $("#button-duplicate-card").click(ui_duplicate_card);
     $("#button-delete-card").click(ui_delete_card);

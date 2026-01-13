@@ -4,13 +4,13 @@ function receiveMessage(event) {
     const { style, html, pages, options } = event.data;
     if (typeof html === 'string') {
         showCloseButton = false;
-        insertCards(style, html);
-        cropMarks(pages, options)
+        insertCards(style, html, () => {
+            cropMarks(pages, options);
+        });
     }
 }
 
-function insertCards(style, html) {
-    // Remove all previous content
+function insertCards(style, html, callback) {
     (function waitForBody() {
         if (!document.body){
             requestAnimationFrame(waitForBody);
@@ -20,14 +20,18 @@ function insertCards(style, html) {
             document.body.removeChild(document.body.lastChild);
         }
     
-        // Create a div that holds all the received HTML
         var div = document.createElement("div");
         div.setAttribute("class", "output-container");
         div.id = "output-container";
         div.innerHTML = style + DOMPurify.sanitize(html, { ADD_TAGS: [ 'page'] });
     
-        // Add the new div to the document
         document.body.appendChild(div);
+        
+        if (callback) {
+            requestAnimationFrame(() => {
+                requestAnimationFrame(callback);
+            });
+        }
     })();
 }
 
@@ -93,10 +97,17 @@ function sortByFlexVisualOrder(
 
 
 function showCropMark (mark, card, pag) {
-    card.querySelector(`.crop-mark-${mark}`).classList.remove('hide');
+    const element = card.querySelector(`.crop-mark-${mark}`);
+    if (element) {
+        element.classList.remove('hide');
+    }
 }
 
 function cropMarks(pages, options) {
+    if (!options || !options.crop_marks) {
+        return;
+    }
+    
     const pagesLen = pages.length;
     const cols = Number(options.page_columns);
     const rows = Number(options.page_rows);
@@ -126,6 +137,10 @@ function cropMarks(pages, options) {
         for(r = 0; r < rows; r++) {
             for(c = 0, nc = cols - 1; c < cols; c++, nc--) {
                 const card = cards[i];
+                if (!card) {
+                    i++;
+                    continue;
+                }
                 // vertical crop marks
                 if (r_first === r) {
                     if (!collapseCropsCols || c === c_first) showCropMark('top-left-v', card, pag);

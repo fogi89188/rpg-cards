@@ -466,6 +466,7 @@
     position: absolute;
     border: 1px solid black;
     box-sizing: border-box;
+    z-index: -1;
 }
 
 .crop-mark-top-left-v {
