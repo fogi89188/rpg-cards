@@ -50,9 +50,9 @@ var autoBoldRules = [
         replacement: '<b>$1</b>',
     },
 
-    // Bold "Action" when NOT after pipe |
+    // Bold "Action"
     {
-        pattern: /(?:^|[^|])\s*(Action)\b/gi,
+        pattern: /\b(Action)\b/gi,
         replacement: '$1',
     },
 
@@ -121,7 +121,7 @@ var autoBoldRules = [
 
     // Time measurements
     {
-        pattern: /\b(next)?\s*(rounds?|minutes?|hours?|days?|turns?)\b/gi,
+        pattern: /\b((next)?\s*(rounds?|minutes?|hours?|days?|turns?))\b/gi,
         replacement: '<b>$1</b>',
     },
 
