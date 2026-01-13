@@ -361,6 +361,8 @@ function ui_update_selected_card() {
         $("#card-back-options-group").toggle(showBackFields);
         $("#card-back-contents-group").toggle(showBackFields);
         $("#card-back-font-size-group").toggle(showBackFields);
+        // Hide/show back design options (opposite of text options)
+        $(".card-back-design-option").toggle(!showBackFields);
         $("#card-tags").val(card.tags.join(", "));
         getFieldGroup('card').forEach(field => {
             field.changeValue(field.getData(), { updateData: false });
@@ -1333,9 +1335,12 @@ $(document).ready(function () {
         if (card) {
             card.back_double_sided = isChecked;
         }
+        // Show/hide text content options
         $("#card-back-options-group").toggle(isChecked);
         $("#card-back-contents-group").toggle(isChecked);
         $("#card-back-font-size-group").toggle(isChecked);
+        // Hide/show back design options (opposite of text options)
+        $(".card-back-design-option").toggle(!isChecked);
         ui_render_selected_card();
     });
     
