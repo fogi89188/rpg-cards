@@ -1375,6 +1375,11 @@ function applyAutoBoldGeneric(textareaId) {
 
         line = line.replace(/<\/?b>/gi, '');
 
+        // Skip processing for lines starting with "subtitle |"
+        if (/^subtitle\s*\|/i.test(line)) {
+            return line;
+        }
+
         autoBoldRules.forEach(function(rule) {
             line = line.replace(rule.pattern, rule.replacement);
         });
