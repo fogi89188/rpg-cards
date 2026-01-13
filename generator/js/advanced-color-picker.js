@@ -15,10 +15,12 @@
 
     // Predefined colors that cannot be removed (from Zavian's default_color_palette)
     const PREDEFINED_COLORS = [
+        { name: 'Common', color: '#565656' },
         { name: 'Uncommon', color: '#008000' },
         { name: 'Rare', color: '#000080' },
         { name: 'Very Rare', color: '#8a2be2' },
-        { name: 'Legendary', color: '#c46709' }
+        { name: 'Legendary', color: '#c46709' },
+        { name: 'Spell', color: '#4A6898' },
     ];
 
     // Color utilities
