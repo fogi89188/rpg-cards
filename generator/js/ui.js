@@ -1213,6 +1213,9 @@ $(document).ready(function () {
     
     // Auto Bold button handler
     $("#auto-bold-btn").click(applyAutoBold);
+    
+    // Auto Size Text button handler
+    $("#auto-size-text-btn").click(applyAutoSizeText);
 
     ui_update_card_list();
     });
@@ -1290,6 +1293,106 @@ function applyAutoBold() {
         showToast('Auto-bold applied successfully!', 'success');
     } else {
         showToast('No formatting changes needed.', 'info');
+    }
+}
+
+function applyAutoSizeText() {
+    const card = ui_selected_card();
+    const contentsTextarea = document.getElementById('card-contents');
+    const fontSizeInput = document.getElementById('card-font-size');
+    const previewContainer = document.getElementById('preview-container');
+    
+    if (!card) {
+        showToast('No card selected.', 'warning');
+        return;
+    }
+    
+    if (!contentsTextarea || !contentsTextarea.value.trim()) {
+        showToast('No content to size.', 'warning');
+        return;
+    }
+    
+    if (!fontSizeInput || !previewContainer) {
+        showToast('Required elements not found.', 'error');
+        return;
+    }
+    
+    const originalFontSize = card.card_font_size || card_options.default_card_font_size || '';
+    const MIN_SIZE = 6;
+    const MAX_SIZE = 72;
+    const STEP = 0.1;
+    const TOLERANCE = 2;
+    const MAX_ITERATIONS = 20;
+    
+    function isContentOverflowing(fontSize) {
+        card.card_font_size = fontSize.toString();
+        
+        const cardHtml = card_generate_front(card, card_options, { isPreview: true });
+        previewContainer.innerHTML = cardHtml;
+        previewContainer.offsetHeight;
+        
+        const container = previewContainer.querySelector('.card-content-container');
+        if (!container) {
+            console.error('Card content container not found');
+            return null;
+        }
+        
+        const heightDiff = container.scrollHeight - container.clientHeight;
+        const overflowing = heightDiff > TOLERANCE;
+        
+        console.log(`Size ${fontSize}px: ${overflowing ? '❌ OVERFLOW' : '✓ OK'} (diff: ${heightDiff}px)`);
+        
+        return overflowing;
+    }
+    
+    function findOptimalFontSize() {
+        let low = MIN_SIZE;
+        let high = MAX_SIZE;
+        let lastGoodSize = MIN_SIZE;
+        let iterations = 0;
+        
+        while (high - low > STEP && iterations < MAX_ITERATIONS) {
+            iterations++;
+            const testSize = Math.round((low + high) / 2 * 10) / 10;
+            const overflowing = isContentOverflowing(testSize);
+            
+            if (overflowing === null) break;
+            
+            if (overflowing) {
+                high = testSize - STEP;
+            } else {
+                lastGoodSize = testSize;
+                low = testSize + STEP;
+            }
+        }
+        
+        if (isContentOverflowing(lastGoodSize)) {
+            lastGoodSize = Math.max(MIN_SIZE, lastGoodSize - 1);
+        }
+        
+        return lastGoodSize;
+    }
+    
+    try {
+        showToast('Calculating optimal font size...', 'info', 1000);
+        
+        const optimalSize = findOptimalFontSize();
+        
+        if (optimalSize >= MIN_SIZE) {
+            card.card_font_size = optimalSize.toString();
+            fontSizeInput.value = optimalSize;
+            $(fontSizeInput).trigger('change');
+            showToast(`Optimal font size set to ${optimalSize}px`, 'success');
+        } else {
+            card.card_font_size = originalFontSize;
+            showToast('Could not find a suitable font size.', 'warning');
+        }
+    } catch (error) {
+        console.error('Error in auto-size calculation:', error);
+        card.card_font_size = originalFontSize;
+        showToast('Error calculating font size: ' + error.message, 'error');
+    } finally {
+        ui_render_selected_card();
     }
 }
 

@@ -2,7 +2,26 @@
 // Add or modify rules here - each rule is an object with pattern, replacement, and description
 
 var autoBoldRules = [
-    
+    {
+        pattern: /\b((number\s+of\s+)?charges?)\b/gi,
+        replacement: '<b>$1</b>',
+    },
+    {
+        pattern: /\b(long rest|short rest)\b/gi,
+        replacement: '<b>$1</b>',
+    },
+    {
+        pattern: /\b(bonus)\b/gi,
+        replacement: '<b>$1</b>',
+    },
+    {
+        pattern: /\b(proficiency)\b/gi,
+        replacement: '<b>$1</b>',
+    },
+    {
+        pattern: /\b(hits?)\b/gi,
+        replacement: '<b>$1</b>',
+    },
     {
         pattern: /^description\s*\|\s*Using a (Higher-(?:Level )?Spell Slot)\s*:\s*\|\s*/gi,
         replacement: 'text |',
@@ -46,7 +65,7 @@ var autoBoldRules = [
 
     // Bold damage
     {
-        pattern: /\b(double|half|damage)\b/gi,
+        pattern: /\b(double|half|halved|damage)\b/gi,
         replacement: '<b>$1</b>',
     },
 
@@ -169,13 +188,13 @@ var autoBoldRules = [
     // Bold property names (like "Casting time", "Range", "Components")
     {
         pattern: /^property\s*\|\s*([^|:]+):?\s*/gm,
-        replacement: 'property | <b>$1:</b> ',
+        replacement: 'property | $1: ',
     },
 
     // Bold property names (like "Casting time", "Range", "Components")
     {
         pattern: /^description\s*\|\s*([^|:]+):?\s*/gm,
-        replacement: 'description | <b>$1:</b> ',
+        replacement: 'description | $1: ',
     },
     
     // To add a new rule, add a comma after the closing brace above and add your new rule:

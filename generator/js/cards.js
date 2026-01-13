@@ -347,7 +347,10 @@ function card_element_rawhtml(params, card_data, options) {
  */
 function card_element_subtitle(params, card_data, options) {
   var subtitle = params[0] || "";
-  var result = '<div class="card-element card-subtitle">';
+  var element_style = card_element_style(card_data, options);
+  var styleAttr = element_style ? ' style="' + element_style + '"' : '';
+  
+  var result = '<div class="card-element card-subtitle"' + styleAttr + '>';
   if (params[1]) {
     result += '<div style="float:right">' + params[1] + "</div>";
   }
@@ -915,8 +918,13 @@ function card_element_bullet(params, card_data, options) {
 function card_element_section(params, card_data, options) {
   var color = card_data_color_front(card_data, options);
   var section = params[0] || "";
+  var element_style = card_element_style(card_data, options);
+  var style = 'color:' + color + ';';
+  if (element_style) {
+    style += element_style;
+  }
 
-  var result = '<h3 class="card-section" style="color:' + color + '">';
+  var result = '<h3 class="card-section" style="' + style + '">';
   if (params[1]) {
     result += '<div style="float:right">' + params[1] + "</div>";
   }
