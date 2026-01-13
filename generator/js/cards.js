@@ -1110,9 +1110,12 @@ function card_generate_color_back_style(color, data = {}, options = {}) {
 
 function card_generate_back_icon_style(color, data = {}, options = {}) {
   const rotation = card_data_icon_back_rotation(data, options);
+  const icon = card_data_icon_back(data, options);
   let bgStyle = '';
-  if (data.icon_back_container !== 'none') {
-    bgStyle = `background-repeat: no-repeat; transform: rotate(${rotation}deg);`;
+  if (data.icon_back_container !== 'none' && icon) {
+    // Inline the icon background-image URL for html2canvas compatibility
+    const iconUrl = `../icons/${icon}.svg`;
+    bgStyle = `background-image: url('${iconUrl}'); background-size: 75%; background-position: 50% 50%; background-repeat: no-repeat; transform: rotate(${rotation}deg);`;
   }
   return `style="${bgStyle}"`;
 }
