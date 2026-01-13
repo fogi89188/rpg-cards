@@ -163,6 +163,38 @@ page .card .card-fill,
   border-color: #ddd !important;
 }
 
+/* Modal dark theme support */
+[data-theme="dark"] .modal-content {
+  background-color: var(--panel-bg);
+  color: var(--text);
+  border-color: var(--border);
+}
+
+[data-theme="dark"] .modal-header {
+  background-color: var(--panel-bg);
+  color: var(--text);
+  border-bottom-color: var(--border);
+}
+
+[data-theme="dark"] .modal-body {
+  background-color: var(--panel-bg);
+  color: var(--text);
+}
+
+[data-theme="dark"] .modal-footer {
+  background-color: var(--panel-bg);
+  border-top-color: var(--border);
+}
+
+[data-theme="dark"] .modal-header .close {
+  color: var(--text);
+  opacity: 0.8;
+}
+
+[data-theme="dark"] .modal-header .close:hover {
+  opacity: 1;
+}
+
 /* Theme toggle button */
 #theme-toggle{
   margin-left: 12px;
