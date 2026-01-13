@@ -353,6 +353,14 @@ function ui_update_selected_card() {
         $("#card-icon-back-rotation").val(card.icon_back_rotation);
 		$("#card-background").val(card.background_image);
         $("#card-contents").val(card.contents?.join("\n"));
+        $("#card-back-double-sided").prop('checked', card.back_double_sided || false);
+        $("#card-back-contents").val(card.back_contents || "");
+        $("#card-back-font-size").val(card.card_back_font_size);
+        $("#header-show-back").val(card.header_show_back || "");
+        const showBackFields = card.back_double_sided || false;
+        $("#card-back-options-group").toggle(showBackFields);
+        $("#card-back-contents-group").toggle(showBackFields);
+        $("#card-back-font-size-group").toggle(showBackFields);
         $("#card-tags").val(card.tags.join(", "));
         getFieldGroup('card').forEach(field => {
             field.changeValue(field.getData(), { updateData: false });
@@ -366,6 +374,13 @@ function ui_update_selected_card() {
         $("#card-icon-back-rotation").val("");
 		$("#card-background").val("");
         $("#card-contents").val("");
+        $("#card-back-double-sided").prop('checked', false);
+        $("#card-back-contents").val("");
+        $("#card-back-font-size").val("");
+        $("#header-show-back").val("");
+        $("#card-back-options-group").hide();
+        $("#card-back-contents-group").hide();
+        $("#card-back-font-size-group").hide();
         $("#card-tags").val("");
         getFieldGroup('card').forEach(field => field.reset());
     }
@@ -1155,6 +1170,7 @@ $(document).ready(function () {
     // $("#deck-cards-list-title-filter-clear").click(ui_filter_selected_card_title_clear);
 
     $("#card-font-size").change(ui_change_card_property);
+    $("#card-back-font-size").change(ui_change_card_property);
     $("#card-icon-front").change(ui_change_card_property);
     $("#card-count").change(ui_change_card_count);
     $("#card-icon-back").change(ui_change_card_property);
@@ -1162,6 +1178,24 @@ $(document).ready(function () {
     $("#card-icon-back-rotation").change(ui_change_card_property);
 	$("#card-background").change(ui_change_card_property);
     $("#card-contents").change(ui_change_card_contents);
+    $("#card-back-contents").change(function() {
+        const card = ui_selected_card();
+        if (card) {
+            card.back_contents = $(this).val();
+            ui_render_selected_card();
+        }
+    });
+    $("#card-back-contents").keyup(function() {
+        clearTimeout($(this).data('timeout'));
+        const timeout = setTimeout(() => {
+            const card = ui_selected_card();
+            if (card) {
+                card.back_contents = $(this).val();
+                ui_render_selected_card();
+            }
+        }, 200);
+        $(this).data('timeout', timeout);
+    });
     $("#card-tags").change(ui_change_card_tags);
 
     $("#card-contents").keyup(ui_change_card_contents_keyup);
@@ -1211,71 +1245,70 @@ $(document).ready(function () {
     $("#button-move-up").click(ui_move_up);
     $("#button-move-down").click(ui_move_down);
     
-    // Auto Bold button handler
-    $("#auto-bold-btn").click(applyAutoBold);
+    // Auto Bold button handlers
+    $("#auto-bold-btn").click(() => applyAutoBoldGeneric('card-contents'));
+    $("#auto-bold-back-btn").click(() => applyAutoBoldGeneric('card-back-contents'));
     
-    // Auto Size Text button handler
-    $("#auto-size-text-btn").click(applyAutoSizeText);
+    // Auto Size Text button handlers
+    $("#auto-size-text-btn").click(() => applyAutoSizeTextGeneric('card-contents', 'card_font_size', 'card-font-size', 'front'));
+    $("#auto-size-text-back-btn").click(() => applyAutoSizeTextGeneric('card-back-contents', 'card_back_font_size', 'card-back-font-size', 'back'));
+    
+    // Double sided back checkbox handler
+    $("#card-back-double-sided").change(function() {
+        const isChecked = $(this).is(':checked');
+        const card = ui_selected_card();
+        if (card) {
+            card.back_double_sided = isChecked;
+        }
+        $("#card-back-options-group").toggle(isChecked);
+        $("#card-back-contents-group").toggle(isChecked);
+        $("#card-back-font-size-group").toggle(isChecked);
+        ui_render_selected_card();
+    });
+    
+    // Back header show/hide handler
+    $("#header-show-back").change(ui_change_card_property);
 
     ui_update_card_list();
     });
 });
 
-// Auto Bold functionality
-function applyAutoBold() {
-    console.log('Auto Bold button clicked'); // Debug log
-    
-    var contentsTextarea = document.getElementById('card-contents');
+function applyAutoBoldGeneric(textareaId) {
+    const contentsTextarea = document.getElementById(textareaId);
     if (!contentsTextarea) {
         console.log('Contents textarea not found');
         return;
     }
     
-    var text = contentsTextarea.value;
-    var originalText = text;
+    let text = contentsTextarea.value;
+    const originalText = text;
     
-    console.log('Original text:', text); // Debug log
-    
-    // Check if autoBoldRules is defined
     if (typeof autoBoldRules === 'undefined') {
         console.error('autoBoldRules is not defined');
         alert('Auto Bold rules not loaded. Please refresh the page.');
         return;
     }
     
-    console.log('Number of rules:', autoBoldRules.length); // Debug log
-    
-    // Per-line processing: clear HTML and apply rules per line to avoid tags moving across lines
-    console.log('Processing text per line to avoid cross-line tag merging...');
-    var lines = text.split('\n');
-    var changed = false;
+    const lines = text.split('\n');
+    let changed = false;
 
-    var processedLines = lines.map(function(line, lineIndex) {
-        originalLine = line;
+    const processedLines = lines.map(function(line) {
+        const originalLine = line;
 
-        // 1. Clear existing <b>...</b> tags
         line = line.replace(/<\/?b>/gi, '');
 
-        // 2. Apply each regex rule to this single line
-        autoBoldRules.forEach(function(rule, index) {
-            var beforeReplace = line;
+        autoBoldRules.forEach(function(rule) {
             line = line.replace(rule.pattern, rule.replacement);
-            if (beforeReplace !== line) {
-                console.log('Line', lineIndex + 1, 'Rule', index + 1, 'applied:', rule.description || 'No description');
-            }
         });
 
-        // 3. Clean up adjacent or misplaced bold tags
         line = line.replace(/<\/b><b>/gi, '');
         line = line.replace(/<\/b>\s+<b>/gi, ' ');
         line = line.replace(/^<\/b>\s*/i, '');
         line = line.replace(/\s*<b>$/i, '');
         line = line.replace(/<b>\s*<\/b>/gi, '');
         
-        // 4. Remove ONLY nested <b> tags within other <b> tags
         do {
             var before = line;
-            // Match <b>content <b>nested</b> more</b> → <b>content nested more</b>
             line = line.replace(/<b[^>]*>((?:[^<]|\n|<(?!b\b)[^>]*>)*?)<b[^>]*>((?:[^<]|\n|<(?!b\b)[^>]*>)*?)<\/b>((?:[^<]|\n|<(?!b\b)[^>]*>)*?)<\/b>/gi, '$1$2$3');
         } while (line !== before);
 
@@ -1283,8 +1316,6 @@ function applyAutoBold() {
 
         return line;
     });
-    console.log('Per-line processing completed. Any changes:', changed);
-    console.log('Final text:', text); // Debug log
     
     text = processedLines.join('\n');
     if (text !== originalText) {
@@ -1296,10 +1327,15 @@ function applyAutoBold() {
     }
 }
 
-function applyAutoSizeText() {
+// Auto Bold functionality - kept for backwards compatibility
+function applyAutoBold() {
+    applyAutoBoldGeneric('card-contents');
+}
+
+function applyAutoSizeTextGeneric(textareaId, cardPropertyName, inputId, side = 'front') {
     const card = ui_selected_card();
-    const contentsTextarea = document.getElementById('card-contents');
-    const fontSizeInput = document.getElementById('card-font-size');
+    const contentsTextarea = document.getElementById(textareaId);
+    const fontSizeInput = document.getElementById(inputId);
     const previewContainer = document.getElementById('preview-container');
     
     if (!card) {
@@ -1317,17 +1353,23 @@ function applyAutoSizeText() {
         return;
     }
     
-    const originalFontSize = card.card_font_size || card_options.default_card_font_size || '';
+    const originalFontSize = card[cardPropertyName] || card_options.default_card_font_size || '';
     const MIN_SIZE = 6;
-    const MAX_SIZE = 72;
+    const MAX_SIZE = 16;
     const STEP = 0.1;
     const TOLERANCE = 2;
     const MAX_ITERATIONS = 20;
     
     function isContentOverflowing(fontSize) {
-        card.card_font_size = fontSize.toString();
+        card[cardPropertyName] = fontSize.toString();
         
-        const cardHtml = card_generate_front(card, card_options, { isPreview: true });
+        let cardHtml;
+        if (side === 'back') {
+            cardHtml = card_generate_back(card, card_options, { isPreview: true });
+        } else {
+            cardHtml = card_generate_front(card, card_options, { isPreview: true });
+        }
+        
         previewContainer.innerHTML = cardHtml;
         previewContainer.offsetHeight;
         
@@ -1379,21 +1421,26 @@ function applyAutoSizeText() {
         const optimalSize = findOptimalFontSize();
         
         if (optimalSize >= MIN_SIZE) {
-            card.card_font_size = optimalSize.toString();
+            card[cardPropertyName] = optimalSize.toString();
             fontSizeInput.value = optimalSize;
             $(fontSizeInput).trigger('change');
             showToast(`Optimal font size set to ${optimalSize}px`, 'success');
         } else {
-            card.card_font_size = originalFontSize;
+            card[cardPropertyName] = originalFontSize;
             showToast('Could not find a suitable font size.', 'warning');
         }
     } catch (error) {
         console.error('Error in auto-size calculation:', error);
-        card.card_font_size = originalFontSize;
+        card[cardPropertyName] = originalFontSize;
         showToast('Error calculating font size: ' + error.message, 'error');
     } finally {
         ui_render_selected_card();
     }
+}
+
+// Auto Size Text functionality - kept for backwards compatibility
+function applyAutoSizeText() {
+    applyAutoSizeTextGeneric('card-contents', 'card_font_size', 'card-font-size', 'front');
 }
 
 // Simple toast notification function

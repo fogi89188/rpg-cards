@@ -1230,6 +1230,21 @@ function card_generate_back_html({
 
 
 function card_generate_back(data, options, { isPreview }) {
+  // Check if this is a double-sided text card
+  if (data.back_double_sided) {
+    // Generate a front-style card with back content
+    const backCardData = {
+      ...data,
+      contents: data.back_contents ? data.back_contents.split('\n') : [],
+      card_font_size: data.card_back_font_size || data.card_font_size,
+      header_show: data.header_show_back || data.header_show,
+      // Keep the back color and other back-specific properties
+      color_front: card_data_color_back(data, options)
+    };
+    return card_generate_front(backCardData, options, { isPreview });
+  }
+
+  // Original back generation code
   var color = card_data_color_back(data, options);
   var style_color = card_generate_color_back_style(color, data, options);
 
