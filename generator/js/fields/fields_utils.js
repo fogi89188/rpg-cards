@@ -12,33 +12,48 @@ function ui_fields_colorfield_color(value) {
     return '';
 }
 
-function ui_fields_colorfield_change_handler(field, $selector) {
+function ui_fields_colorfield_change_handler(field, picker) {
     const newValue = field.getValue();
-    let foundValue = ui_fields_colorfield_color(newValue);
-    $selector.colorselector('setColor', foundValue);
-    field.el.previousElementSibling.style.backgroundColor = foundValue ? '' : newValue;
-    if (!foundValue) {
-        field.update(newValue);
-        ui_render_selected_card();
+    if (newValue) {
+        // Update the picker to show the current color
+        if (picker) {
+            picker.setColor(newValue);
+        }
     }
 }
 
 function ui_fields_colorfield_init(field) {
     const $selector = $(`#${field.id}-selector`);
-    let options = '';
-    for (const [name, val] of Object.entries(card_colors)) {
-        options += `<option value="${name}" data-color="${val}">${name}</option>`;
-    }
-    $selector.append(options);
-    $selector.colorselector({
-        callback: function (value, color, title) {
-            field.el.previousElementSibling.style.backgroundColor = '';
-            field.update(title);
+    
+    // Initialize the advanced color picker
+    $selector.advancedColorPicker({
+        defaultColor: field.getValue() || '#FFFFFF',
+        onSelect: function(color) {
+            field.update(color);
             ui_render_selected_card();
         }
     });
-    $selector.next('.dropdown-colorselector').addClass("input-group-addon color-input-addon");
-    field.el.addEventListener('change', () => ui_fields_colorfield_change_handler(field, $selector));
-    field.el.addEventListener('input', () => ui_fields_colorfield_change_handler(field, $selector));
-    ui_fields_colorfield_change_handler(field, $selector);
+    
+    const picker = $selector.data('advancedColorPicker');
+    
+    // Handle manual input changes
+    field.el.addEventListener('change', () => {
+        const newValue = field.getValue();
+        if (newValue && picker) {
+            picker.setColor(newValue);
+        }
+        ui_render_selected_card();
+    });
+    
+    field.el.addEventListener('input', () => {
+        const newValue = field.getValue();
+        if (newValue && picker) {
+            picker.setColor(newValue);
+        }
+    });
+    
+    // Set initial color
+    if (field.getValue() && picker) {
+        picker.setColor(field.getValue());
+    }
 }

@@ -1,0 +1,498 @@
+/* Advanced Color Picker Styles */
+
+.advanced-color-picker-wrapper {
+    display: inline-block;
+    position: relative;
+}
+
+.advanced-color-picker-toggle {
+    width: 38px;
+    height: 38px;
+    border: 2px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    transition: border-color 0.2s;
+}
+
+.advanced-color-picker-toggle:hover {
+    border-color: #66afe9;
+}
+
+.advanced-color-picker-toggle .color-preview {
+    width: 30px;
+    height: 30px;
+    border-radius: 2px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.advanced-color-picker-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 5px;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
+    z-index: 1000;
+    padding: 15px;
+    min-width: 320px;
+}
+
+.color-picker-main {
+    margin-bottom: 15px;
+}
+
+.spectrum-wrapper {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.spectrum-gradient {
+    position: relative;
+    flex: 1;
+}
+
+.spectrum-canvas {
+    display: block;
+    cursor: crosshair;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+}
+
+.spectrum-cursor {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 3px rgba(0, 0, 0, 0.5);
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+}
+
+.hue-slider-wrapper {
+    position: relative;
+    width: 20px;
+}
+
+.hue-canvas {
+    display: block;
+    cursor: pointer;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+}
+
+.hue-cursor {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: #fff;
+    border: 1px solid #000;
+    pointer-events: none;
+    transform: translateY(-50%);
+}
+
+.color-inputs {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 15px;
+}
+
+.input-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.input-row label {
+    font-size: 11px;
+    font-weight: bold;
+    color: #666;
+    text-align: center;
+}
+
+.input-row input {
+    width: 100%;
+    padding: 4px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    text-align: center;
+    font-size: 12px;
+}
+
+.input-row input:focus {
+    outline: none;
+    border-color: #66afe9;
+    box-shadow: 0 0 0 1px rgba(102, 175, 233, 0.2);
+}
+
+.hex-input {
+    text-transform: uppercase;
+}
+
+.color-name-input {
+    margin-bottom: 15px;
+}
+
+.color-name-field {
+    width: 100%;
+    padding: 6px 8px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    font-size: 13px;
+}
+
+.color-name-field:focus {
+    outline: none;
+    border-color: #66afe9;
+    box-shadow: 0 0 0 1px rgba(102, 175, 233, 0.2);
+}
+
+.color-name-field::placeholder {
+    color: #999;
+    font-style: italic;
+}
+
+.color-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: space-between;
+}
+
+.color-actions .btn {
+    flex: 1;
+}
+
+.saved-colors-section,
+.recent-colors-section {
+    border-top: 1px solid #eee;
+    padding-top: 10px;
+    margin-bottom: 10px;
+}
+
+.saved-colors-section:last-child,
+.recent-colors-section:last-child {
+    margin-bottom: 0;
+}
+
+.saved-colors-header,
+.recent-colors-header {
+    font-size: 12px;
+    font-weight: bold;
+    color: #666;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+}
+
+.saved-colors-grid,
+.recent-colors-grid {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 6px;
+    min-height: 30px;
+}
+
+.color-swatch {
+    position: relative;
+    width: 100%;
+    padding-bottom: 100%;
+    cursor: pointer;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.color-swatch-inner {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 3px;
+    transition: transform 0.2s;
+}
+
+.color-swatch:hover .color-swatch-inner {
+    transform: scale(1.1);
+}
+
+.color-swatch .remove-color {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #d9534f;
+    color: #fff;
+    border: none;
+    font-size: 12px;
+    line-height: 14px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s;
+    z-index: 1;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.color-swatch:hover .remove-color {
+    opacity: 1;
+}
+
+/* Predefined colors (cannot be removed) */
+.color-swatch.predefined {
+    position: relative;
+}
+
+.color-swatch.predefined::after {
+    content: '★';
+    position: absolute;
+    bottom: 1px;
+    right: 1px;
+    color: #ffd700;
+    font-size: 10px;
+    text-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+    pointer-events: none;
+    z-index: 2;
+}
+
+.no-colors {
+    grid-column: 1 / -1;
+    text-align: center;
+    color: #999;
+    font-size: 12px;
+    font-style: italic;
+    padding: 8px;
+}
+
+/* Integration with existing styles */
+.input-group .advanced-color-picker-wrapper {
+    margin-right: -1px;
+}
+
+.input-group-addon.color-input-addon {
+    padding: 0;
+    border: none;
+    background: transparent;
+}
+
+/* Make it work nicely in forms */
+.form-group .advanced-color-picker-wrapper {
+    display: block;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+    .advanced-color-picker-dropdown {
+        left: auto;
+        right: 0;
+        min-width: 280px;
+    }
+
+    .spectrum-canvas {
+        width: 200px !important;
+        height: 160px !important;
+    }
+
+    .hue-canvas {
+        height: 160px !important;
+    }
+
+    .saved-colors-grid,
+    .recent-colors-grid {
+        grid-template-columns: repeat(6, 1fr);
+    }
+}
+
+/* Ensure proper positioning in input groups */
+.input-group .advanced-color-picker-wrapper .advanced-color-picker-dropdown {
+    left: 0;
+}
+
+/* Dark Theme Support */
+@media (prefers-color-scheme: dark) {
+    .advanced-color-picker-toggle {
+        border-color: #555;
+        background: #2d2d2d;
+    }
+
+    .advanced-color-picker-toggle:hover {
+        border-color: #777;
+    }
+
+    .advanced-color-picker-dropdown {
+        background: #2d2d2d;
+        border-color: #555;
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+    }
+
+    .spectrum-canvas,
+    .hue-canvas {
+        border-color: #555;
+    }
+
+    .input-row input {
+        background: #1a1a1a;
+        border-color: #555;
+        color: #e0e0e0;
+    }
+
+    .input-row input:focus {
+        border-color: #777;
+        box-shadow: 0 0 0 1px rgba(119, 119, 119, 0.3);
+    }
+
+    .input-row label {
+        color: #aaa;
+    }
+
+    .color-name-field {
+        background: #1a1a1a;
+        border-color: #555;
+        color: #e0e0e0;
+    }
+
+    .color-name-field:focus {
+        border-color: #777;
+        box-shadow: 0 0 0 1px rgba(119, 119, 119, 0.3);
+    }
+
+    .color-name-field::placeholder {
+        color: #666;
+    }
+
+    .saved-colors-section,
+    .recent-colors-section {
+        border-top-color: #444;
+    }
+
+    .saved-colors-header,
+    .recent-colors-header {
+        color: #aaa;
+    }
+
+    .color-swatch-inner {
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .no-colors {
+        color: #666;
+    }
+
+    .color-actions .btn-success {
+        background-color: #5cb85c;
+        border-color: #4cae4c;
+    }
+
+    .color-actions .btn-success:hover {
+        background-color: #4cae4c;
+        border-color: #449d44;
+    }
+
+    .color-actions .btn-primary {
+        background-color: #337ab7;
+        border-color: #2e6da4;
+    }
+
+    .color-actions .btn-primary:hover {
+        background-color: #286090;
+        border-color: #204d74;
+    }
+}
+
+/* Explicit dark theme class support */
+body.dark-theme .advanced-color-picker-toggle,
+.dark-theme .advanced-color-picker-toggle {
+    border-color: #555;
+    background: #2d2d2d;
+}
+
+body.dark-theme .advanced-color-picker-toggle:hover,
+.dark-theme .advanced-color-picker-toggle:hover {
+    border-color: #777;
+}
+
+body.dark-theme .advanced-color-picker-dropdown,
+.dark-theme .advanced-color-picker-dropdown {
+    background: #2d2d2d;
+    border-color: #555;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+}
+
+body.dark-theme .spectrum-canvas,
+body.dark-theme .hue-canvas,
+.dark-theme .spectrum-canvas,
+.dark-theme .hue-canvas {
+    border-color: #555;
+}
+
+body.dark-theme .input-row input,
+.dark-theme .input-row input {
+    background: #1a1a1a;
+    border-color: #555;
+    color: #e0e0e0;
+}
+
+body.dark-theme .input-row input:focus,
+.dark-theme .input-row input:focus {
+    border-color: #777;
+    box-shadow: 0 0 0 1px rgba(119, 119, 119, 0.3);
+}
+
+body.dark-theme .input-row label,
+.dark-theme .input-row label {
+    color: #aaa;
+}
+
+body.dark-theme .color-name-field,
+.dark-theme .color-name-field {
+    background: #1a1a1a;
+    border-color: #555;
+    color: #e0e0e0;
+}
+
+body.dark-theme .color-name-field:focus,
+.dark-theme .color-name-field:focus {
+    border-color: #777;
+    box-shadow: 0 0 0 1px rgba(119, 119, 119, 0.3);
+}
+
+body.dark-theme .color-name-field::placeholder,
+.dark-theme .color-name-field::placeholder {
+    color: #666;
+}
+
+body.dark-theme .saved-colors-section,
+body.dark-theme .recent-colors-section,
+.dark-theme .saved-colors-section,
+.dark-theme .recent-colors-section {
+    border-top-color: #444;
+}
+
+body.dark-theme .saved-colors-header,
+body.dark-theme .recent-colors-header,
+.dark-theme .saved-colors-header,
+.dark-theme .recent-colors-header {
+    color: #aaa;
+}
+
+body.dark-theme .color-swatch-inner,
+.dark-theme .color-swatch-inner {
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-theme .no-colors,
+.dark-theme .no-colors {
+    color: #666;
+}
