@@ -873,24 +873,18 @@ function ui_download_card(face = 'front') {
         document.fonts.ready
     ]).then(() => {
         setTimeout(() => {
-            html2canvas(cardElement, {
-                scale: 3,
-                useCORS: true,
-                allowTaint: true,
-                backgroundColor: null,
-                logging: false,
-                onclone: (clonedDoc) => {
-                    const clonedElement = clonedDoc.querySelector('.card');
-                    if (clonedElement) {
-                        clonedElement.style.fontFamily = window.getComputedStyle(cardElement).fontFamily;
-                    }
-                }
-            }).then(canvas => {
+            htmlToImage.toPng(cardElement, {
+                quality: 1.0,
+                pixelRatio: 3,
+                cacheBust: true,
+                skipFonts: false,
+                includeQueryParams: true
+            }).then(dataUrl => {
                 const link = document.createElement('a');
                 const cardName = selectedCard.title || 'card';
                 const sanitizedName = cardName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
                 link.download = `${sanitizedName}_${face}.png`;
-                link.href = canvas.toDataURL('image/png');
+                link.href = dataUrl;
                 link.click();
                 
                 button.innerHTML = originalText;
