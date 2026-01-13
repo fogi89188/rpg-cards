@@ -158,12 +158,18 @@
 .card-title {
     height: 8mm;
     padding-left: 2mm;
+    padding-right: 2mm;
     font-family: Lora, 'Calisto MT', 'Bookman Old Style', Bookman, 'Goudy Old Style', Garamond, 'Hoefler Text', 'Bitstream Charter', Georgia, serif;
     font-variant: small-caps;
     font-weight: bold;
     background-color: inherit;
     color: white;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 16px;
+    line-height: 7mm;
+    box-sizing: border-box;
 }
 .card-title-16 {
     font-size: 16pt;

@@ -144,16 +144,13 @@ function card_size_class(card_data, options) {
 
 function card_element_title(card_data, options) {
   var title = card_data.title_display || card_data.title || "";
-  var title_size = card_data.title_size || options.default_title_size || "";
   var title_color = card_data.title_color || options.default_title_color || "";
   
   // Build style attribute
   var titleStyle = "";
   if (title_color) titleStyle += "color: " + title_color + ";";
-  if (title_size && title_size !== "" && title_size !== "normal") {
-    titleStyle += "font-size: " + title_size + "pt; line-height: " + (parseFloat(title_size) >= 14 ? "6.5mm" : "7mm") + ";";
-  }
   
+  // Create a wrapper to enable auto-fit sizing
   return (
     '<div class="card-title" style="' + titleStyle + '">' + title + "</div>"
   );

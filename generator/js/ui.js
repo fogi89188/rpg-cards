@@ -477,8 +477,35 @@ function ui_render_selected_card() {
         var front = card_generate_front(card, card_options, { isPreview: true });
         var back = card_generate_back(card, card_options, { isPreview: true });
         $('#preview-container').html(DOMPurify.sanitize(front + "\n" + back));
+        
+        // Auto-fit title text after rendering
+        setTimeout(() => {
+            ui_autofit_titles();
+        }, 0);
     }
     local_store_save();
+}
+
+function ui_autofit_titles() {
+    // Auto-fit all card titles to their containers
+    document.querySelectorAll('.card-title').forEach(titleElement => {
+        const maxFontSize = 16; // Maximum font size in pixels
+        const minFontSize = 8;  // Minimum font size in pixels
+        
+        // Reset to max size
+        titleElement.style.fontSize = maxFontSize + 'px';
+        
+        // Get the container width (accounting for padding)
+        const containerWidth = titleElement.offsetWidth;
+        const textWidth = titleElement.scrollWidth;
+        
+        // If text doesn't fit, scale it down
+        if (textWidth > containerWidth) {
+            const ratio = containerWidth / textWidth;
+            const newSize = Math.max(minFontSize, Math.floor(maxFontSize * ratio));
+            titleElement.style.fontSize = newSize + 'px';
+        }
+    });
 }
 
 function ui_open_help() {
@@ -776,11 +803,6 @@ function ui_change_card_tags() {
     }
 }
 
-function ui_change_default_title_size() {
-    card_options.default_title_size = $(this).val();
-    ui_render_selected_card();
-}
-
 function ui_change_default_icon_size() {
     card_options.icon_inline = $(this).is(':checked');
     ui_render_selected_card();
@@ -909,13 +931,6 @@ function ui_apply_default_color_front() {
 function ui_apply_default_color_back() {
     const k = 'color_back';
     const v = card_options.default_color_back;
-    card_data.forEach(card => { card[k] = v; }); 
-    ui_update_selected_card();
-}
-
-function ui_apply_default_font_title() {
-    const k = 'title_size';
-    const v = card_options.default_title_size;
     card_data.forEach(card => { card[k] = v; }); 
     ui_update_selected_card();
 }
@@ -1125,7 +1140,6 @@ $(document).ready(function () {
         $("#default-icon-front").val(options.default_icon_front_container);
         $("#default-icon-back").val(options.default_icon_back);
         $("#default-icon-back-container").val(options.default_icon_back_container).trigger("change");
-        $("#default-title-size").val(options.default_title_size);
         $("#default-card-font-size").val(options.default_card_font_size);
     	$("#default-card-background").val(options.default_background_image);
     }
@@ -1165,7 +1179,6 @@ $(document).ready(function () {
 
     $('#default-icon-front').val(card_options.default_icon_front);
     $('#default-icon-back').val(card_options.default_icon_back);
-    $('#default-title-size').val(card_options.default_title_size);
     $('#default-card-font-size').val(card_options.default_card_font_size);
 
     $('.icon-list').typeahead({
@@ -1223,7 +1236,6 @@ $(document).ready(function () {
     $("#button-help").click(ui_open_help);
     $("#button-apply-default-color-front").click(ui_apply_default_color_front);
     $("#button-apply-default-color-back").click(ui_apply_default_color_back);
-    $("#button-apply-default-font-title").click(ui_apply_default_font_title);
     $("#button-apply-default-title-color").click(ui_apply_default_title_color);
     $("#button-apply-default-font-card").click(ui_apply_default_font_card);
     $("#button-apply-default-icon-front").click(ui_apply_default_icon_front);
@@ -1295,7 +1307,6 @@ $(document).ready(function () {
     $("#default-icon-back").change(ui_change_default_icon_back)
     $("#default-icon-back-rotation").change(ui_change_default_icon_back_rotation);
     $("#default-icon-back-container").change(ui_change_default_icon_back_container);
-    $("#default-title-size").change(ui_change_default_title_size);
     $("#default-card-font-size").change(ui_change_default_card_font_size);
     $("#default-card-background").change(ui_change_default_card_background);
 

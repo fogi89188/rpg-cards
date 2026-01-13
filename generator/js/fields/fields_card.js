@@ -46,14 +46,6 @@ UI_FIELDS_CONFIGURATION_PREPARE.set('card', () => [
         ]
     },
     {
-        id: 'card-title-size',
-        property: [ui_selected_card, 'title_size'],
-        defaultProperty: [default_card_data, 'default_title_size'],
-        events: [
-            ['change', ui_render_selected_card]
-        ]
-    },
-    {
         id: 'title-color',
         property: [ui_selected_card, 'title_color'],
         defaultProperty: [default_card_data, 'default_title_color'],
