@@ -344,8 +344,10 @@ function card_element_rawhtml(params, card_data, options) {
  */
 function card_element_subtitle(params, card_data, options) {
   var subtitle = params[0] || "";
+  var color = card_data_color_front(card_data, options);
   var element_style = card_element_style(card_data, options);
-  var styleAttr = element_style ? ' style="' + element_style + '"' : '';
+  var colorStyle = 'color:' + color + ';background:transparent;';
+  var styleAttr = element_style ? ' style="' + colorStyle + element_style + '"' : ' style="' + colorStyle + '"';
   
   var result = '<div class="card-element card-subtitle"' + styleAttr + '>';
   if (params[1]) {

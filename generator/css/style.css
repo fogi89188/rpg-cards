@@ -1,16 +1,16 @@
 /* Theme variables */
 :root{
-  --bg: #f5f5f5;
-  --text: #1a1a1a;
-  --muted: #666666;
+  --bg: #ffffff;
+  --text: #111827;
+  --muted: #6b7280;
   --card-bg: #ffffff;
-  --panel-bg: #e8e8e8;
+  --panel-bg: #f7f7f7;
   --accent: #1966d9;
-  --border: #c0c0c0;
-  --hover-bg: rgba(0,0,0,0.05);
+  --border: #e5e7eb;
+  --hover-bg: rgba(0,0,0,0.3);
 }
 
-/* Dark theme overrides */
+/* Dark theme overrides (brighter grayscale) */
 [data-theme="dark"]{
   --bg: #1b1b1b;         
   --text: #f7f7f7;       
@@ -72,8 +72,7 @@ a, .btn-primary {
 }
 
 .btn:hover, .btn:focus, .action-button:hover {
-  background-color: var(--hover-bg) !important;
-  border-color: var(--muted) !important;
+  filter: brightness(0.95);
 }
 
 /* Red delete buttons for both light and dark modes */
@@ -121,8 +120,7 @@ input, textarea, select, .form-control {
   border: 1px solid var(--border);
 }
 
-/* Preview cards: limit lightness to textual elements (subtitle/description) so cards keep their chosen background */
-.preview-container .card .card-subtitle,
+/* Preview cards: limit lightness to textual elements (description) so cards keep their chosen background */
 .preview-container .card .card-description-line,
 .preview-container .card .card-description-text,
 .preview-container .card .card-property-line,
@@ -133,8 +131,6 @@ input, textarea, select, .form-control {
 }
 
 /* Generated output pages/cards: ensure textual elements are readable in output but do NOT override card-level background color */
-page .card .card-subtitle,
-.page-preview .card .card-subtitle,
 page .card .card-description-line,
 .page-preview .card .card-description-line,
 page .card .card-description-text,
