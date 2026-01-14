@@ -12,14 +12,14 @@
 
 /* Dark theme overrides */
 [data-theme="dark"]{
-  --bg: #2a2a2a;         
-  --text: #e5e5e5;       
-  --muted: #999999;      
-  --card-bg: #1e1e1e;    
-  --panel-bg: #353535;   
-  --accent: #4a9eff;     
-  --border: #505050;     
-  --hover-bg: rgba(255,255,255,0.1);
+  --bg: #1b1b1b;         
+  --text: #f7f7f7;       
+  --muted: #6b7280;      
+  --card-bg: #141414;    
+  --panel-bg: #1f1f1f;   
+  --accent: #1966d9;     
+  --border: #2f2f2f;     
+  --hover-bg: rgba(255,255,255,0.3);
 }
 
 /* Make preview container match page background */
