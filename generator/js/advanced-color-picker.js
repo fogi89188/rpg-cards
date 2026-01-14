@@ -21,6 +21,7 @@
         { name: 'Very Rare', color: '#8a2be2' },
         { name: 'Legendary', color: '#c46709' },
         { name: 'Spell', color: '#4A6898' },
+        { name: 'Healing Potion', color: '#CF1020' },
     ];
 
     // Color utilities
