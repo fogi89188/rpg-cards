@@ -1111,7 +1111,8 @@ function card_generate_back_icon_style(color, data = {}, options = {}) {
   let bgStyle = '';
   if (data.icon_back_container !== 'none' && icon) {
     // Inline the icon background-image URL for html2canvas compatibility
-    const iconUrl = `./icons/${icon}.svg`;
+    // Use absolute path from page root to ensure it works on GitHub Pages
+    const iconUrl = `icons/${icon}.svg`;
     bgStyle = `background-image: url('${iconUrl}'); background-size: 75%; background-position: 50% 50%; background-repeat: no-repeat; transform: rotate(${rotation}deg);`;
   }
   return `style="${bgStyle}"`;
