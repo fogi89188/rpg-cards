@@ -7,6 +7,10 @@ var autoBoldRules = [
         replacement: '<b>$1</b>',
     },
     {
+        pattern: /(\+)/gi,
+        replacement: '<b>$1</b>',
+    },
+    {
         pattern: /\b(command word)\b/gi,
         replacement: '<b>$1</b>',
     },
