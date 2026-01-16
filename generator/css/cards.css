@@ -26,6 +26,10 @@
     border-radius: inherit;
 }
 
+.card.no-border .card-content {
+    border: none;
+}
+
 .card-content-container {
     padding:2mm;
     padding-top:1mm;

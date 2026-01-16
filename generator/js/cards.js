@@ -42,7 +42,15 @@ function default_card_data() {
     count: 1,
     title: '',
     contents: [],
-    tags: []
+    tags: [],
+    front_card_type: 'rpg-card',
+    back_card_type: 'rpg-back',
+    front_image_fit: 'contain',
+    back_image_fit: 'contain',
+    front_border: 'show',
+    back_border: 'show',
+    front_image_rounded: 'round',
+    back_image_rounded: 'round'
   };
 }
 
@@ -1174,7 +1182,32 @@ function card_generate_front(data, options, { isPreview }) {
 
   const cardClasses = ['card'];
   if (options.rounded_corners) cardClasses.push('rounded-corners');
-  if (data.vertical_alignment_reference === 'content-area') cardClasses.push('valignref-content-area'); 
+  if (data.vertical_alignment_reference === 'content-area') cardClasses.push('valignref-content-area');
+  
+  // Add no-border class if border should be hidden
+  const hideBorder = data.front_border === 'hide';
+  if (hideBorder) cardClasses.push('no-border');
+  
+  // Check if front card type is set to 'image' and there's a full card image
+  if (data.front_card_type === 'image' && data.front_full_image) {
+    const fitMode = data.front_image_fit || 'contain';
+    const objectFit = fitMode === 'stretch' ? 'fill' : fitMode;
+    const isRounded = (data.front_image_rounded || 'round') === 'round';
+    const clipPath = isRounded ? 'clip-path: inset(0 round 3mm);' : '';
+    
+    return `<div class="${cardClasses.join(' ')}" ${card_style}>
+      <div class="card-content" ${card_content_style}>
+        <div style="position: relative; width: 100%; height: 100%; overflow: hidden;">
+          <img src="${data.front_full_image}" 
+               style="width: 100%; height: 100%; object-fit: ${objectFit}; display: block; ${clipPath}" 
+               alt="Card front image" />
+        </div>
+      </div>
+      <div>
+        ${card_generate_crop_marks(data, options, { isPreview })}
+      </div>
+    </div>`;
+  }
 
   return `<div class="${cardClasses.join(' ')}" ${card_style}>
     <div class="card-content" ${card_content_style}>
@@ -1233,8 +1266,50 @@ function card_generate_back_html({
 
 
 function card_generate_back(data, options, { isPreview }) {
-  // Check if this is a double-sided text card
-  if (data.back_double_sided) {
+  // Check if back card type is set to 'image' and there's a full card image
+  if (data.back_card_type === 'image' && data.back_full_image) {
+    var color = card_data_color_back(data, options);
+    var style_color = card_generate_color_back_style(color, data, options);
+    
+    var width = options.card_width;
+    var height = options.card_height;
+    var back_bleed_width = options.back_bleed_width;
+    var back_bleed_height = options.back_bleed_height;
+    
+    var card_width = "calc(" + width + " + " + back_bleed_width + ")";
+    var card_height = "calc(" + height + " + " + back_bleed_height + ")";
+    
+    var card_style = isPreview ? add_size_to_style(style_color, width, height) : add_size_to_style(style_color, card_width, card_height);
+    var card_content_style = isPreview ? '' : add_bleed_to_style();
+    
+    const cardClasses = ['card'];
+    if (options.rounded_corners) cardClasses.push('rounded-corners');
+    
+    // Add no-border class if border should be hidden
+    const hideBorder = data.back_border === 'hide';
+    if (hideBorder) cardClasses.push('no-border');
+    
+    const fitMode = data.back_image_fit || 'contain';
+    const objectFit = fitMode === 'stretch' ? 'fill' : fitMode;
+    const isRounded = (data.back_image_rounded || 'round') === 'round';
+    const clipPath = isRounded ? 'clip-path: inset(0 round 3mm);' : '';
+    
+    return `<div class="${cardClasses.join(' ')}" ${card_style}>
+      <div class="card-content" ${card_content_style}>
+        <div style="position: relative; width: 100%; height: 100%; overflow: hidden;">
+          <img src="${data.back_full_image}" 
+               style="width: 100%; height: 100%; object-fit: ${objectFit}; display: block; ${clipPath}" 
+               alt="Card back image" />
+        </div>
+      </div>
+      <div>
+        ${card_generate_crop_marks(data, options, { isPreview })}
+      </div>
+    </div>`;
+  }
+  
+  // Check if back card type is set to 'double-sided' for text content on back
+  if (data.back_card_type === 'double-sided') {
     // Generate a front-style card with back content
     const backCardData = {
       ...data,
@@ -1242,12 +1317,14 @@ function card_generate_back(data, options, { isPreview }) {
       card_font_size: data.card_back_font_size || data.card_font_size,
       header_show: data.header_show_back || data.header_show,
       // Keep the back color and other back-specific properties
-      color_front: card_data_color_back(data, options)
+      color_front: card_data_color_back(data, options),
+      // Use back border setting for double-sided
+      front_border: data.back_border
     };
     return card_generate_front(backCardData, options, { isPreview });
   }
 
-  // Original back generation code
+  // Original back generation code (rpg-back default)
   var color = card_data_color_back(data, options);
   var style_color = card_generate_color_back_style(color, data, options);
 

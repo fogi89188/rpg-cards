@@ -365,7 +365,9 @@ function ui_update_selected_card() {
         $(".card-back-design-option").toggle(!showBackFields);
         $("#card-tags").val(card.tags.join(", "));
         getFieldGroup('card').forEach(field => {
-            field.changeValue(field.getData(), { updateData: false });
+            // Use default value if property is undefined/null/empty
+            const value = field.getData() ?? field.defaultValue;
+            field.changeValue(value, { updateData: false });
         });
     } else {
         $("#card-font-size").val("");
@@ -385,6 +387,11 @@ function ui_update_selected_card() {
         $("#card-back-font-size-group").hide();
         $("#card-tags").val("");
         getFieldGroup('card').forEach(field => field.reset());
+    }
+
+    // Update field visibility based on dropdown selections
+    if (typeof toggleFieldVisibility === 'function') {
+        toggleFieldVisibility();
     }
 
     ui_render_selected_card();

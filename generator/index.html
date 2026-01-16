@@ -44,6 +44,7 @@
     <script type="text/javascript" src="js/fields/fields_card.js"></script>
     <script type="text/javascript" src="js/auto-bold-rules.js"></script>
     <script type="text/javascript" src="js/cards.js"></script>
+    <script type="text/javascript" src="js/card-image-upload.js"></script>
     <script type="text/javascript" src="js/colors.js"></script>
     <script type="text/javascript" src="js/icons.js"></script>
     <script type="text/javascript" src="js/doc_parser.js"></script>
@@ -72,7 +73,7 @@
             <div class="col-md-12 col-lg-3" style="overflow-y: auto;">
 
 
-                <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+                <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="false">
 
                     <div class="panel panel-default">
                         <div class="panel-heading" role="tab" id="headingOne">
@@ -717,12 +718,33 @@
                         </div>
                     </div>
 
+                    <div class="panel panel-default">
+                        <div class="panel-heading" role="tab" id="headingActions">
+                            <h4 class="panel-title">
+                                <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion"
+                                    href="#collapseActions" aria-expanded="false" aria-controls="collapseActions">
+                                    <!-- PANEL TITLE -->
+                                    Text References
+                                    <!-- /PANEL TITLE -->
+                                </a>
+                            </h4>
+                        </div>
+                        <div id="collapseActions" class="panel-collapse collapse" role="tabpanel"
+                            aria-labelledby="headingActions">
+                            <div class="panel-body">
+                                <!-- PANEL BODY -->
+                                <div id="card-actions"></div>
+                                <!-- /PANEL BODY -->
+                            </div>
+                        </div>
+                    </div>
+
 
                 </div>
 
 
             </div>
-            <div class="col-md-12 col-lg-5" style="overflow: auto;">
+            <div class="col-md-12 col-lg-5" style="overflow: auto; min-height: 1200px;">
                 <!--<h3>Card</h3>-->
                 <form class="form-horizontal" role="form">
                     <div class="form-group">
@@ -745,6 +767,15 @@
                     </div>
                     <hr style="border-top-color: #aaaaaa;">
                     <div class="form-group">
+                        <label for="card-front-type" class="col-sm-2 control-label">Front type</label>
+                        <div class="col-sm-10">
+                            <select class="form-control" id="card-front-type" data-property="front_card_type">
+                                <option value="rpg-card">RPG Card</option>
+                                <option value="image">Image</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
                         <label for="card-color-front" class="col-sm-2 control-label">Front color</label>
                         <div class="col-sm-10">
                             <div class="input-group">
@@ -754,7 +785,7 @@
                             </div>
                         </div>
                     </div>
-                    <fieldset>
+                    <fieldset class="front-rpg-card-fields">
                     <div class="form-group">
                         <label for="header-show" class="col-sm-2 control-label">Header</label>
                          <div class="col-sm-10">
@@ -765,7 +796,7 @@
                          </div>
                     </div>
                     </fieldset>
-                    <div class="form-group">
+                    <div class="form-group front-rpg-card-fields">
                         <label for="card-title-display" class="col-sm-2 control-label" style="font-weight: normal;">Title</label>
                         <div class="col-sm-10">
                             <div class="input-group">
@@ -777,7 +808,7 @@
                         </div>
                     </div>
 
-                    <div class="form-group">
+                    <div class="form-group front-rpg-card-fields">
                         <label for="title-color" class="col-sm-2 control-label" style="font-weight: normal;">Color</label>
                         <div class="col-sm-10">
                             <div class="input-group">
@@ -786,13 +817,13 @@
                             </div>
                         </div>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group front-rpg-card-fields">
                         <label for="card-type" class="col-sm-2 control-label" style="font-weight: normal;">Type</label>
                         <div class="col-sm-10">
                             <input type="text" id="card-type" class="form-control" placeholder="Type or subtitle">
                         </div>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group front-rpg-card-fields">
                         <label for="card-icon-front" class="col-sm-2 control-label">Front icons</label>
                         <div class="col-sm-10">
                             <div class="input-group">
@@ -804,7 +835,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group front-rpg-card-fields">
                         <label for="card-icon-front-color" class="col-sm-2 control-label" style="font-weight: normal;">Color</label>
                         <div class="col-sm-10">
                             <div class="input-group">
@@ -813,97 +844,7 @@
                             </div>
                         </div>
                     </div>
-                    <hr style="border-top-color: #aaaaaa;">
-                    <div class="form-group card-back-design-option">
-                        <label for="card-color-back" class="col-sm-2 control-label">Back color</label>
-                        <div class="col-sm-10">
-                            <div class="input-group">
-                                <select id="card-color-back-selector" class="colorselector-data"></select>
-                                <input type="text" id="card-color-back" class="form-control" placeholder="Front color or default back color"
-                                    data-property="color-back">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-group card-back-design-option">
-                        <label for="card-icon-back" class="col-sm-2 control-label">Back icon</label>
-                        <div class="col-sm-10">
-                            <div class="input-group">
-                                <span class="input-group-btn">
-                                    <button class="btn btn-default icon-select-button" type="button">Search</button>
-                                </span>
-                                <input type="text" id="card-icon-back" class="form-control icon-list"
-                                    placeholder="Front icon or default back icon" data-property="icon_back">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-group card-back-design-option">
-                        <label for="icon-back-rotation" class="col-sm-2 control-label" style="font-weight: normal;">Rotation (°)</label>
-                        <div class="col-sm-10">
-                            <input type="number" id="card-icon-back-rotation" class="form-control" value="0" data-property="icon_back_rotation" placeholder="0">
-                        </div>
-                    </div>
-                    <div class="form-group card-back-design-option">
-                         <label for="card-icon-back-container" class="col-sm-2 control-label" style="font-weight: normal;">Container</label>
-                         <div class="col-sm-10">
-                            <select class="form-control" id="card-icon-back-container" data-property="icon_back_container">
-                                <option value="none">None</option>
-                                <option value="square">Square</option>
-                                <option value="rounded-square">Rounded square</option>
-                                <option value="circle">Circle</option>
-                            </select>
-                         </div>
-                    </div>
-                    <div class="form-group card-back-design-option">
-                        <label for="card-background" class="col-sm-2 control-label">Back image</label>
-                        <div class="col-sm-10">
-                            <input type="text" id="card-background" class="form-control"
-                                placeholder="Background image URL" data-property="background_image">
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="card-back-double-sided" class="col-sm-2 control-label">Double Sided</label>
-                        <div class="col-sm-10">
-                            <div class="checkbox" style="padding-top: 7px;">
-                                <label>
-                                    <input type="checkbox" id="card-back-double-sided" data-property="back_double_sided">
-                                    Show text content on back
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                    <fieldset id="card-back-options-group" style="display: none;">
-                    <div class="form-group">
-                        <label for="header-show-back" class="col-sm-2 control-label" style="font-weight: normal;">Back header</label>
-                         <div class="col-sm-10">
-                            <select class="form-control" id="header-show-back" data-property="header_show_back">
-                                <option value="">Show</option>
-                                <option value="none">Hide</option>
-                            </select>
-                         </div>
-                    </div>
-                    </fieldset>
-                    <div class="form-group" id="card-back-contents-group" style="display: none;">
-                        <div class="col-sm-2 text-right">
-                            <div>
-                                <label for="card-back-contents" class="control-label" style="font-weight: normal;">Back text</label>
-                            </div>
-                        </div>
-                        <div class="col-sm-10">
-                            <div class="form-group" style="margin-bottom: 10px;">
-                                <button type="button" class="btn btn-primary btn-sm" id="auto-bold-back-btn">Auto Bold</button>
-                                <button type="button" class="btn btn-primary btn-sm" id="auto-size-text-back-btn">Auto Size Text</button>
-                            </div>
-                            <textarea class="form-control" rows="7" id="card-back-contents" placeholder="Back text content"></textarea>
-                        </div>
-                    </div>
-                    <div class="form-group" id="card-back-font-size-group" style="display: none;">
-                        <label for="card-back-font-size" class="col-sm-2 control-label" style="font-weight: normal;">Back text size</label>
-                        <div class="col-sm-10">
-                            <input type="number" class="form-control" id="card-back-font-size" data-property="card_back_font_size" placeholder="Back text size (e.g. 8, 10, 12)" min="6" max="72" step="0.5">
-                        </div>
-                    </div>
-                    <hr style="border-top-color: #aaaaaa;">
-                    <div class="form-group">
+                    <div class="form-group front-rpg-card-fields">
                         <div class="col-sm-2 text-right">
                             <div>
                                 <label for="card-contents" class="control-label">Contents</label>
@@ -917,13 +858,13 @@
                             <textarea class="form-control" rows="14" id="card-contents"></textarea>
                         </div>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group front-rpg-card-fields">
                         <label for="card-font-size" class="col-sm-2 control-label" style="font-weight: normal;">Text size</label>
                         <div class="col-sm-10">
                             <input type="number" class="form-control" id="card-font-size" data-property="card_font_size" placeholder="Text size (e.g. 8, 10, 12)" min="6" max="72" step="0.5">
                         </div>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group front-rpg-card-fields">
                          <label for="vertical-alignment-reference" class="col-sm-2 control-label" style="font-weight: normal;">Relative to</label>
                          <div class="col-sm-10">
                             <select class="form-control" id="vertical-alignment-reference">
@@ -932,10 +873,149 @@
                             </select>
                          </div>
                     </div>
-                    <div class="form-group">
-                        <label for="card-contents" class="col-sm-2 control-label">Actions</label>
+                    <div class="form-group front-image-fields" style="display: none;">
+                        <label for="card-front-full-image" class="col-sm-2 control-label">Front image</label>
                         <div class="col-sm-10">
-                            <div id="card-actions"></div>
+                            <input type="text" id="card-front-full-image" class="form-control" placeholder="Image URL or upload below" data-property="front_full_image">
+                            <input type="file" id="card-front-full-image-upload" accept="image/*" class="form-control" style="margin-top: 5px; height: auto; padding: 6px 12px;">
+                            <small class="help-block">Full card image</small>
+                        </div>
+                    </div>
+                    <div class="form-group front-image-fields" style="display: none;">
+                        <label for="card-front-image-fit" class="col-sm-2 control-label" style="font-weight: normal;">Fit mode</label>
+                        <div class="col-sm-10">
+                            <select class="form-control" id="card-front-image-fit" data-property="front_image_fit">
+                                <option value="stretch">Stretch to fill (ignores aspect ratio)</option>
+                                <option value="contain">Fit to card (maintains aspect ratio)</option>
+                                <option value="cover">Cover card (maintains aspect ratio, may crop)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group front-image-fields" style="display: none;">
+                        <label for="card-front-border" class="col-sm-2 control-label" style="font-weight: normal;">Border & Corners</label>
+                        <div class="col-sm-5">
+                            <select class="form-control" id="card-front-border" data-property="front_border">
+                                <option value="show">Show border</option>
+                                <option value="hide">Hide border</option>
+                            </select>
+                        </div>
+                        <div class="col-sm-5">
+                            <select class="form-control" id="card-front-image-rounded" data-property="front_image_rounded">
+                                <option value="round">Rounded</option>
+                                <option value="square">Square</option>
+                            </select>
+                        </div>
+                    </div>
+                    <hr style="border-top-color: #aaaaaa;">
+                    <div class="form-group">
+                        <label for="card-back-type" class="col-sm-2 control-label">Back type</label>
+                        <div class="col-sm-10">
+                            <select class="form-control" id="card-back-type" data-property="back_card_type">
+                                <option value="rpg-back">RPG Card Back</option>
+                                <option value="double-sided">Double Sided Text</option>
+                                <option value="image">Image</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group card-back-design-option">
+                        <label for="card-color-back" class="col-sm-2 control-label">Back color</label>
+                        <div class="col-sm-10">
+                            <div class="input-group">
+                                <select id="card-color-back-selector" class="colorselector-data"></select>
+                                <input type="text" id="card-color-back" class="form-control" placeholder="Front color or default back color"
+                                    data-property="color-back">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group card-back-design-option back-rpg-back-fields">
+                        <label for="card-icon-back" class="col-sm-2 control-label">Back icon</label>
+                        <div class="col-sm-10">
+                            <div class="input-group">
+                                <span class="input-group-btn">
+                                    <button class="btn btn-default icon-select-button" type="button">Search</button>
+                                </span>
+                                <input type="text" id="card-icon-back" class="form-control icon-list"
+                                    placeholder="Front icon or default back icon" data-property="icon_back">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group card-back-design-option back-rpg-back-fields">
+                        <label for="icon-back-rotation" class="col-sm-2 control-label" style="font-weight: normal;">Rotation (°)</label>
+                        <div class="col-sm-10">
+                            <input type="number" id="card-icon-back-rotation" class="form-control" value="0" data-property="icon_back_rotation" placeholder="0">
+                        </div>
+                    </div>
+                    <div class="form-group card-back-design-option back-rpg-back-fields">
+                         <label for="card-icon-back-container" class="col-sm-2 control-label" style="font-weight: normal;">Container</label>
+                         <div class="col-sm-10">
+                            <select class="form-control" id="card-icon-back-container" data-property="icon_back_container">
+                                <option value="none">None</option>
+                                <option value="square">Square</option>
+                                <option value="rounded-square">Rounded square</option>
+                                <option value="circle">Circle</option>
+                            </select>
+                         </div>
+                    </div>
+                    <div class="form-group card-back-design-option back-double-sided-fields" style="display: none;">
+                        <label for="header-show-back" class="col-sm-2 control-label" style="font-weight: normal;">Back header</label>
+                         <div class="col-sm-10">
+                            <select class="form-control" id="header-show-back" data-property="header_show_back">
+                                <option value="">Show</option>
+                                <option value="none">Hide</option>
+                            </select>
+                         </div>
+                    </div>
+                    <div class="form-group back-double-sided-fields" style="display: none;">
+                        <div class="col-sm-2 text-right">
+                            <div>
+                                <label for="card-back-contents" class="control-label" style="font-weight: normal;">Back text</label>
+                            </div>
+                        </div>
+                        <div class="col-sm-10">
+                            <div class="form-group" style="margin-bottom: 10px;">
+                                <button type="button" class="btn btn-primary btn-sm" id="auto-bold-back-btn">Auto Bold</button>
+                                <button type="button" class="btn btn-primary btn-sm" id="auto-size-text-back-btn">Auto Size Text</button>
+                            </div>
+                            <textarea class="form-control" rows="7" id="card-back-contents" placeholder="Back text content"></textarea>
+                        </div>
+                    </div>
+                    <div class="form-group back-double-sided-fields" style="display: none;">
+                        <label for="card-back-font-size" class="col-sm-2 control-label" style="font-weight: normal;">Back text size</label>
+                        <div class="col-sm-10">
+                            <input type="number" class="form-control" id="card-back-font-size" data-property="card_back_font_size" placeholder="Back text size (e.g. 8, 10, 12)" min="6" max="72" step="0.5">
+                        </div>
+                    </div>
+                    <div class="form-group card-back-design-option back-image-fields" style="display: none;">
+                        <label for="card-back-full-image" class="col-sm-2 control-label">Back image</label>
+                        <div class="col-sm-10">
+                            <input type="text" id="card-back-full-image" class="form-control" placeholder="Image URL or upload below" data-property="back_full_image">
+                            <input type="file" id="card-back-full-image-upload" accept="image/*" class="form-control" style="margin-top: 5px; height: auto; padding: 6px 12px;">
+                            <small class="help-block">Full card image (overrides icon/color)</small>
+                        </div>
+                    </div>
+                    <div class="form-group back-image-fields" style="display: none;">
+                        <label for="card-back-image-fit" class="col-sm-2 control-label" style="font-weight: normal;">Fit mode</label>
+                        <div class="col-sm-10">
+                            <select class="form-control" id="card-back-image-fit" data-property="back_image_fit">
+                                <option value="stretch">Stretch to fill (ignores aspect ratio)</option>
+                                <option value="contain">Fit to card (maintains aspect ratio)</option>
+                                <option value="cover">Cover card (maintains aspect ratio, may crop)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group back-image-fields" style="display: none;">
+                        <label for="card-back-border" class="col-sm-2 control-label" style="font-weight: normal;">Border & Corners</label>
+                        <div class="col-sm-5">
+                            <select class="form-control" id="card-back-border" data-property="back_border">
+                                <option value="show">Show border</option>
+                                <option value="hide">Hide border</option>
+                            </select>
+                        </div>
+                        <div class="col-sm-5">
+                            <select class="form-control" id="card-back-image-rounded" data-property="back_image_rounded">
+                                <option value="round">Rounded</option>
+                                <option value="square">Square</option>
+                            </select>
                         </div>
                     </div>
                 </form>
