@@ -129,7 +129,42 @@ function ui_load_files(evt) {
             }
             try {
                 const data = JSON.parse(result);
-                const newData = legacy_card_data(data);
+                
+                // Check if new format (object with card_data and card_options) or old format (array)
+                let cardsData;
+                if (Array.isArray(data)) {
+                    // Old format: just card data array
+                    cardsData = data;
+                } else if (data.card_data) {
+                    // New format: object with card_data and card_options
+                    cardsData = data.card_data;
+                    if (data.card_options) {
+                        try {
+                            // Restore card_options (page settings)
+                            card_options = { ...card_options, ...data.card_options };
+                            // Set page values directly since ui_set_page_tab_values may not be defined yet
+                            setTimeout(() => {
+                                $("#card-size").val(card_options.card_size).change();
+                                $("#card-arrangement").val(card_options.card_arrangement).change();
+                                $("#page-rows").val(card_options.page_rows).change();
+                                $("#page-columns").val(card_options.page_columns).change();
+                                $("#back-bleed-width").val(card_options.back_bleed_width).change();
+                                $("#back-bleed-height").val(card_options.back_bleed_height).change();
+                                $("#page-zoom-width").val(card_options.page_zoom_width);
+                                $("#page-zoom-height").val(card_options.page_zoom_height);
+                                $("#card-zoom-width").val(card_options.card_zoom_width);
+                                $("#card-zoom-height").val(card_options.card_zoom_height);
+                                $("#rounded-corners").prop('checked', card_options.rounded_corners);
+                            }, 150);
+                        } catch (optErr) {
+                            console.warn('Could not restore page settings:', optErr);
+                        }
+                    }
+                } else {
+                    cardsData = data;
+                }
+                
+                const newData = legacy_card_data(cardsData);
                 if (isOpening && clearAll) {
                     ui_clear_all(false);
                 }
@@ -297,7 +332,12 @@ async function ui_save_file() {
         delete card.uuid;
         return card;
     });
-    const jsonString = JSON.stringify(data, null, "  ");
+    // Save both card data and options
+    const saveData = {
+        card_data: data,
+        card_options: card_options
+    };
+    const jsonString = JSON.stringify(saveData, null, "  ");
     let filename = app_settings.file_name;
     
     if (window.showSaveFilePicker) {
@@ -1148,7 +1188,11 @@ $(document).ready(function () {
     }
 
     function ui_set_page_tab_values(options) {
-       $("#card-size").val(options.card_size).change();
+       console.log('Setting card size to:', options.card_size);
+       $("#card-size").val(options.card_size);
+       console.log('Card size dropdown value after set:', $("#card-size").val());
+       $("#card-size")[0].value = options.card_size; // Force update the DOM element
+       $("#card-size").change();
        $("#card-arrangement").val(options.card_arrangement).change();
        $("#page-rows").val(options.page_rows).change();
        $("#page-columns").val(options.page_columns).change();
