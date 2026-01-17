@@ -535,3 +535,113 @@
     transform: translateX(var(--crop-mark-total)) translateY(calc(var(--crop-mark-stroke) / 2));
 }
 
+/* Silhouette Cameo Registration Marks */
+:root {
+    --reg-mark-size: 5.5mm;
+    --reg-mark-offset: 9.5mm;
+    --reg-mark-line-width: 1mm;
+}
+
+.registration-mark {
+    position: absolute;
+    width: var(--reg-mark-size);
+    height: var(--reg-mark-size);
+    z-index: 1000;
+    pointer-events: none;
+}
+
+.registration-mark::before,
+.registration-mark::after {
+    content: '';
+    position: absolute;
+    background-color: black;
+}
+
+/* Top-left: L shape (right and down) */
+.registration-mark-top-left::before {
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: var(--reg-mark-line-width);
+}
+
+.registration-mark-top-left::after {
+    top: 0;
+    left: 0;
+    width: var(--reg-mark-line-width);
+    height: 100%;
+}
+
+/* Top-right: L shape (left and down) */
+.registration-mark-top-right::before {
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: var(--reg-mark-line-width);
+}
+
+.registration-mark-top-right::after {
+    top: 0;
+    right: 0;
+    width: var(--reg-mark-line-width);
+    height: 100%;
+}
+
+/* Bottom-left: L shape (right and up) */
+.registration-mark-bottom-left::before {
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: var(--reg-mark-line-width);
+}
+
+.registration-mark-bottom-left::after {
+    bottom: 0;
+    left: 0;
+    width: var(--reg-mark-line-width);
+    height: 100%;
+}
+
+/* Bottom-right: L shape (left and up) */
+.registration-mark-bottom-right::before {
+    bottom: 0;
+    right: 0;
+    width: 100%;
+    height: var(--reg-mark-line-width);
+}
+
+.registration-mark-bottom-right::after {
+    bottom: 0;
+    right: 0;
+    width: var(--reg-mark-line-width);
+    height: 100%;
+}
+
+.page {
+    position: relative;
+}
+
+.registration-mark-top-left {
+    position: absolute;
+    top: var(--reg-mark-offset);
+    left: var(--reg-mark-offset);
+}
+
+.registration-mark-top-right {
+    position: absolute;
+    top: var(--reg-mark-offset);
+    right: var(--reg-mark-offset);
+}
+
+.registration-mark-bottom-left {
+    position: absolute;
+    bottom: var(--reg-mark-offset);
+    left: var(--reg-mark-offset);
+}
+
+.registration-mark-bottom-right {
+    position: absolute;
+    bottom: var(--reg-mark-offset);
+    right: var(--reg-mark-offset);
+}
+

@@ -56,5 +56,9 @@ UI_FIELDS_CONFIGURATION_PREPARE.set('page', () => [
     {
         id: 'crop-marks',
         property: 'card_options.crop_marks'
+    },
+    {
+        id: 'registration-marks',
+        property: 'card_options.registration_marks'
     }
 ]);

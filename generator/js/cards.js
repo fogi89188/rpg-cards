@@ -33,7 +33,8 @@ function default_card_options() {
     back_bleed_width: "2mm",
     back_bleed_height: "2mm",
     card_type: "",
-    crop_marks: true
+    crop_marks: true,
+    registration_marks: false
   };
 }
 
@@ -1107,6 +1108,22 @@ function card_generate_crop_marks(card_data, options, params = {}) {
   `;
 }
 
+function card_generate_registration_marks(card_data, options, params = {}) {
+  const {
+    isPreview
+  } = params;
+  
+  if (!options.registration_marks || isPreview) return '';
+
+  // Silhouette registration marks: 4 L-shaped marks at all corners
+  return `
+      <div class="registration-mark registration-mark-top-left"></div>
+      <div class="registration-mark registration-mark-top-right"></div>
+      <div class="registration-mark registration-mark-bottom-left"></div>
+      <div class="registration-mark registration-mark-bottom-right"></div>
+  `;
+}
+
 function card_generate_color_front_style(color, data = {}, options = {}) {
   return `style="color:${color};border-color:${color};background-color:${color}"`;
 }
@@ -1512,6 +1529,10 @@ function card_pages_wrap(pages, options) {
     result += '<div class="page-zoom page-zoom-preview" ' + zoomStyle + ">\n";
     result += pages[i].join("\n");
     result += "</div>\n";
+    // Add registration marks if enabled (outside page-zoom so they're relative to page)
+    if (options.registration_marks) {
+      result += card_generate_registration_marks({}, options, { isPreview: false });
+    }
     result += "</page>\n";
   }
   return result;
