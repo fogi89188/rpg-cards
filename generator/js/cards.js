@@ -1405,7 +1405,6 @@ function card_generate_empty(count, options, is_back) {
     var back_bleed_height = options.back_bleed_height;
     card_width = "calc(" + card_width + " + " + back_bleed_width + ")";
     card_height = "calc(" + card_height + " + " + back_bleed_height + ")";
-  console.log('Individual empty card dimensions:', card_width, 'x', card_height);
 
   var card_style = add_size_to_style(style_color, card_width, card_height);
   var result = "";
@@ -1539,13 +1538,7 @@ function card_pages_wrap(pages, options) {
   var pageWidth = options.page_width;
   var pageHeight = options.page_height;
   
-  console.log('=== LAYOUT DEBUG ===');
-  console.log('Page dimensions:', pageWidth, 'x', pageHeight);
-  console.log('Orientation:', orientation);
-  console.log('Card dimensions:', options.card_width, 'x', options.card_height);
-  console.log('Bleed:', options.back_bleed_width, 'x', options.back_bleed_height);
-  console.log('Grid:', options.page_columns, 'columns x', options.page_rows, 'rows');
-  console.log('Zoom:', options.page_zoom_width + '%', 'x', options.page_zoom_height + '%');
+
 
   var result = "";
   for (var i = 0; i < pages.length; ++i) {
@@ -1585,34 +1578,19 @@ function card_pages_wrap(pages, options) {
     var pageWidthNum = parseFloat(pageWidth);
     var pageHeightNum = parseFloat(pageHeight);
     
-    console.log('Container calculation:');
-    console.log('  Width:', containerWidth, '=', theoreticalWidth + 'mm');
-    console.log('  Height:', containerHeight, '=', theoreticalHeight + 'mm');
-    console.log('  Zoom factors:', zw, zh);
-    console.log('  Theoretical needed space:', theoreticalWidth + 'mm x ' + theoreticalHeight + 'mm');
-    console.log('  Available page space:', pageWidth, 'x', pageHeight);
-    console.log('  Should fit?', theoreticalWidth + 'mm < ' + pageWidthNum + 'mm =', theoreticalWidth < pageWidthNum);
+
     
     zoomStyle = add_size_to_style(
       zoomStyle,
       containerWidth,
       containerHeight
     );
-    
-    console.log('Final zoom style:', zoomStyle);
+
 
     result +=
       '<page class="page page-preview ' + orientation + '" ' + style + ">\n";
     result += '<div class="page-zoom page-zoom-preview" ' + zoomStyle + ">\n";
-    
-    // Debug what's in the pages array for side-by-side
-    if (options.card_arrangement === "side_by_side") {
-      console.log('=== SIDE-BY-SIDE DEBUG PAGE', i + 1, '===');
-      console.log('Cards in page:', pages[i].length);
-      console.log('First few cards:', pages[i].slice(0, 5).map((card, idx) => 
-        `[${idx}] ${typeof card} - ${card ? (card.length > 50 ? card.substring(0, 50) + '...' : card) : 'EMPTY'}`
-      ));
-    }
+
     
     result += pages[i].join("\n");
     result += "</div>\n";
