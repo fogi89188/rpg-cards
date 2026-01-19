@@ -67,6 +67,9 @@ function swapInputValues(id1, id2) {
 }
 
 function ui_generate() {
+    console.log('=== GENERATE DEBUG ===');
+    console.log('Current card_options:', card_options);
+    
     if (card_data.length === 0) {
         alert("Your deck is empty. Please define some cards first, or load the sample deck.");
         return;

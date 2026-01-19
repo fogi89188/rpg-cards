@@ -25,7 +25,7 @@
 
 .page-zoom {
     display: flex;
-    align-content: center;
+    align-content: flex-start;
     justify-content: center;
     flex-direction: row;
     flex-wrap: wrap;
@@ -46,7 +46,13 @@
 /* Chrome has problems with page sizes given in metric units. Make the paper area slightly smaller to work around this. */
 page[size="A4"] {
     width:  210mm; /* full: 210.0mm */
-    height: 296mm; /* full: 297.0mm */
+    height: 297mm; /* full: 297.0mm */
+}
+
+/* A4 Landscape area */
+page[size="A4"].landscape {
+    width:  297mm; /* full: 297.0mm - landscape width */
+    height: 210mm; /* full: 210.0mm - landscape height */
 }
 
 /* US letter area */
