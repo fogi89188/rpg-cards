@@ -13,7 +13,7 @@
     "yauzl": "^3.2.0"
   },
   "scripts": {
-    "start": "npx http-server ./generator",
+    "start": "npx http-server ./generator -a localhost",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "node resources/tools/update-icons.js && node resources/tools/update-fonts.js"
   },

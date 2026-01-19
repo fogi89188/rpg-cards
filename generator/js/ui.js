@@ -53,14 +53,16 @@ function swapInputValues(id1, id2) {
         field1.changeValue(v2);
         field2.changeValue(v1);
     } else {
-        const e1 = document.getElementById(e1);
-        const e2 = document.getElementById(e2);
-        const v1 = e1.value;
-        const v2 = e2.value;
-        e1.value = v2;
-        e1.dispatchEvent(new Event('input'));
-        e2.value = v1;
-        e2.dispatchEvent(new Event('input'));
+        const e1 = document.getElementById(id1);
+        const e2 = document.getElementById(id2);
+        if (e1 && e2) {
+            const v1 = e1.value;
+            const v2 = e2.value;
+            e1.value = v2;
+            e1.dispatchEvent(new Event('input'));
+            e2.value = v1;
+            e2.dispatchEvent(new Event('input'));
+        }
     }
 }
 
@@ -1188,10 +1190,7 @@ $(document).ready(function () {
     }
 
     function ui_set_page_tab_values(options) {
-       console.log('Setting card size to:', options.card_size);
        $("#card-size").val(options.card_size);
-       console.log('Card size dropdown value after set:', $("#card-size").val());
-       $("#card-size")[0].value = options.card_size; // Force update the DOM element
        $("#card-size").change();
        $("#card-arrangement").val(options.card_arrangement).change();
        $("#page-rows").val(options.page_rows).change();
@@ -1327,6 +1326,40 @@ $(document).ready(function () {
 
     $("#card-contents").keyup(ui_change_card_contents_keyup);
 
+    $("#page-size").change(function() {
+        const page_size = $(this).val();
+        if (page_size) {
+            const [w, h] = page_size.split(',');
+            const { page_width, page_height } = card_options;
+            if (isLandscape(page_width, page_height)) {
+                card_options.page_width = h;
+                card_options.page_height = w;
+                $("#page-width").val(h);
+                $("#page-height").val(w);
+            } else {
+                card_options.page_width = w;
+                card_options.page_height = h;
+                $("#page-width").val(w);
+                $("#page-height").val(h);
+            }
+            ui_set_orientation_info('page-orientation', card_options.page_width, card_options.page_height);
+        }
+        card_options.page_size = page_size;
+    });
+    $("#page-width").on("input", function() {
+        const page_width = $(this).val();
+        card_options.page_width = page_width;
+        const { page_height } = card_options;
+        ui_set_value_to_format('page-size', page_width, page_height);
+        ui_set_orientation_info('page-orientation', page_width, page_height);
+    });
+    $("#page-height").on("input", function() {
+        const page_height = $(this).val();
+        card_options.page_height = page_height;
+        const { page_width } = card_options;
+        ui_set_value_to_format('page-size', page_width, page_height);
+        ui_set_orientation_info('page-orientation', page_width, page_height);
+    });
     $("#page-rotate").click(ui_page_rotate);
     $("#page-rows").change(ui_change_option);
     $("#page-columns").change(ui_change_option);

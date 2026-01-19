@@ -38,7 +38,7 @@ UI_FIELDS_CONFIGURATION_PREPARE.set('page', () => [
         events: [
             ['change', function() {
                 const { page_width, page_height } = card_options;
-                ui_set_value_to_format(getField('page-size').el, page_width, page_height);
+                ui_set_value_to_format('page-size', page_width, page_height);
                 ui_set_orientation_info('page-orientation', page_width, page_height);
             }]
         ]

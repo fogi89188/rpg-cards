@@ -1518,10 +1518,15 @@ function card_pages_wrap(pages, options) {
       zoomStyle += "flex-direction:" + "row-reverse" + ";";
     }
     zoomStyle += '"';
+    
+    // Calculate container size based on card layout
+    var containerWidth = `calc((${options.card_width} + ${options.back_bleed_width}) * ${options.page_columns})`;
+    var containerHeight = `calc((${options.card_height} + ${options.back_bleed_height}) * ${options.page_rows})`;
+    
     zoomStyle = add_size_to_style(
       zoomStyle,
-      `calc((${options.card_width} + ${options.back_bleed_width}) * ${options.page_columns})`,
-      `calc((${options.card_height} + ${options.back_bleed_height}) * ${options.page_rows})`
+      containerWidth,
+      containerHeight
     );
 
     result +=
