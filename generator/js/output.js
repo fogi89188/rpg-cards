@@ -1,14 +1,25 @@
 var showCloseButton = true;
-
 var cardArrangement = 'doublesided';
+var positionsSent = false;
+var pageRows = 3;
+var pageColumns = 3;
 
 function receiveMessage(event) {
     const { style, html, options } = event.data;
 
     if (typeof html === 'string') {
         showCloseButton = false;
-        if (options && options.card_arrangement) {
-            cardArrangement = options.card_arrangement;
+        positionsSent = false;
+        if (options) {
+            if (options.card_arrangement) {
+                cardArrangement = options.card_arrangement;
+            }
+            if (options.page_rows) {
+                pageRows = parseInt(options.page_rows, 10) || 3;
+            }
+            if (options.page_columns) {
+                pageColumns = parseInt(options.page_columns, 10) || 3;
+            }
         }
         insertCards(style, html, null);
     }
@@ -39,8 +50,15 @@ function insertCards(style, html, callback) {
         
         // Measure positions after short delay to allow layout
         setTimeout(() => {
+            // Only send positions once per card generation
+            if (positionsSent) {
+                if (callback) callback();
+                return;
+            }
+
             const cardPositions = measureCardPositions();
-            
+            positionsSent = true;
+
             // Send back to parent window
             if (window.opener) {
                 try {
@@ -52,7 +70,7 @@ function insertCards(style, html, callback) {
                     console.error('Failed to send positions:', e);
                 }
             }
-            
+
             if (callback) {
                 callback();
             }
@@ -64,40 +82,52 @@ function measureCardPositions() {
     const positions = [];
     const pageElements = document.querySelectorAll('.page');
 
-    pageElements.forEach((pageElement, pageIndex) => {
-        // In doublesided mode, odd-indexed pages (1, 3, 5...) are back pages
-        // Skip them since cutting is the same for both front and back
-        if (cardArrangement === 'doublesided' && pageIndex % 2 === 1) {
+    const firstPage = pageElements[0];
+    if (!firstPage) {
+        return positions;
+    }
+
+    const pageZoom = firstPage.querySelector('.page-zoom');
+    if (!pageZoom) {
+        return positions;
+    }
+
+    const pageRect = firstPage.getBoundingClientRect();
+    // Get the absolutely positioned wrapper divs (direct children of page-zoom)
+    const cardWrappers = pageZoom.querySelectorAll(':scope > div[style*="position"]');
+    const pixelsToMm = 25.4 / 96;
+
+    // Maximum number of card slots per page
+    const maxCards = pageRows * pageColumns;
+
+    cardWrappers.forEach((wrapper, index) => {
+        // Only process up to maxCards positions
+        if (positions.length >= maxCards) {
             return;
         }
 
-        const pageZoom = pageElement.querySelector('.page-zoom');
-        if (!pageZoom) {
+        const wrapperRect = wrapper.getBoundingClientRect();
+
+        // Skip if wrapper has no size (empty/hidden)
+        if (wrapperRect.width === 0 || wrapperRect.height === 0) {
             return;
         }
 
-        const pageRect = pageElement.getBoundingClientRect();
-        const cardElements = pageZoom.querySelectorAll('.card');
+        const offsetX = (wrapperRect.left - pageRect.left) * pixelsToMm;
+        const offsetY = (wrapperRect.top - pageRect.top) * pixelsToMm;
+        const width = wrapperRect.width * pixelsToMm;
+        const height = wrapperRect.height * pixelsToMm;
 
-        cardElements.forEach((cardElement, cardLocalIndex) => {
-            const cardRect = cardElement.getBoundingClientRect();
-            const pixelsToMm = 25.4 / 96;
-
-            const offsetX = (cardRect.left - pageRect.left) * pixelsToMm;
-            const offsetY = (cardRect.top - pageRect.top) * pixelsToMm;
-            const width = cardRect.width * pixelsToMm;
-            const height = cardRect.height * pixelsToMm;
-
-            positions.push({
-                page: pageIndex,
-                cardIndex: positions.length,
-                x: offsetX,
-                y: offsetY,
-                width: width,
-                height: height
-            });
+        positions.push({
+            page: 0,
+            cardIndex: positions.length,
+            x: offsetX,
+            y: offsetY,
+            width: width,
+            height: height
         });
     });
+
     return positions;
 }
 
