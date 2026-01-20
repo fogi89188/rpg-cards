@@ -1668,6 +1668,379 @@ function card_pages_generate_html(card_data, options) {
   return {
     style: card_pages_generate_style(options),
     html: card_pages_wrap(pages, options),
-    pages
+    pages,
+    cardPositions: card_pages_calculate_positions(pages, options)
   };
+}
+
+function card_pages_calculate_positions(pages, options) {
+  console.log('=== POSITION CALCULATION DEBUG ===');
+  console.log('Attempting to extract positions from rendered DOM...');
+  
+  const positions = [];
+  let globalCardIndex = 0;
+  
+  // Try to get positions from actual rendered DOM elements
+  const pageElements = document.querySelectorAll('.page');
+  
+  if (pageElements.length > 0) {
+    console.log(`Found ${pageElements.length} rendered pages in DOM`);
+    
+    pageElements.forEach((pageElement, pageIndex) => {
+      const cardElements = pageElement.querySelectorAll('.card');
+      console.log(`Page ${pageIndex}: found ${cardElements.length} cards`);
+      
+      const pageRect = pageElement.getBoundingClientRect();
+      
+      cardElements.forEach((cardElement, cardIndex) => {
+        const cardRect = cardElement.getBoundingClientRect();
+        
+        // Convert from pixels to mm (assuming 96 DPI)
+        const pixelsToMm = 25.4 / 96;
+        
+        // Position relative to page
+        const relativeX = (cardRect.left - pageRect.left) * pixelsToMm;
+        const relativeY = (cardRect.top - pageRect.top) * pixelsToMm;
+        
+        // Get card dimensions
+        const cardWidth = parseFloat(options.card_width.replace('mm', ''));
+        const cardHeight = parseFloat(options.card_height.replace('mm', ''));
+        
+        console.log(`  Card ${globalCardIndex}: DOM position (${relativeX.toFixed(2)}, ${relativeY.toFixed(2)})`);
+        
+        positions.push({
+          cardIndex: globalCardIndex,
+          left: relativeX,
+          top: relativeY,
+          width: cardWidth,
+          height: cardHeight,
+          page: pageIndex,
+          x: relativeX,
+          y: relativeY
+        });
+        
+        globalCardIndex++;
+      });
+    });
+    
+    console.log(`Total positions extracted from DOM: ${positions.length}`);
+    return positions;
+  }
+  
+  console.log('No rendered pages found in DOM, falling back to algorithmic calculation...');
+  
+  // Fallback to algorithmic calculation
+  console.log('Pages structure:', pages.map((page, i) => ({ 
+    pageIndex: i, 
+    cardCount: page.length, 
+    actualCards: page.filter(card => card && card.trim() !== '' && !card.includes('card-empty')).length 
+  })));
+
+  const rows = parseInt(options.page_rows) || 3;
+  const cols = parseInt(options.page_columns) || 3;
+  
+  // Parse dimensions in mm
+  const cardWidth = parseFloat(options.card_width.replace('mm', ''));
+  const cardHeight = parseFloat(options.card_height.replace('mm', ''));
+  const bleedWidth = parseFloat(options.back_bleed_width.replace('mm', ''));
+  const bleedHeight = parseFloat(options.back_bleed_height.replace('mm', ''));
+  const pageWidth = parseFloat(options.page_width.replace('mm', ''));
+  const pageHeight = parseFloat(options.page_height.replace('mm', ''));
+  
+  console.log('Dimensions:', { cardWidth, cardHeight, bleedWidth, bleedHeight, pageWidth, pageHeight });
+  
+  // Reset for fallback calculation
+  globalCardIndex = 0;
+  positions.length = 0; // Clear the positions array
+  
+  pages.forEach((page, pageIndex) => {
+    console.log(`Processing page ${pageIndex}:`);
+    
+    // Filter actual cards (non-empty) to get the cards that will actually be displayed
+    const actualCards = page.filter(card => card && card.trim() !== '' && !card.includes('card-empty'));
+    
+    if (actualCards.length === 0) return;
+    
+    // Calculate card dimensions including bleed
+    const cardTotalWidth = cardWidth + (2 * bleedWidth);
+    const cardTotalHeight = cardHeight + (2 * bleedHeight);
+    
+    console.log(`Card total dimensions: ${cardTotalWidth}mm × ${cardTotalHeight}mm`);
+    
+    // Calculate actual cards per row accounting for CSS margins (3mm on each side = 6mm total per card)
+    const cardMargin = 6; // 3mm margin on each side
+    const effectiveCardWidth = cardTotalWidth + cardMargin;
+    const maxCardsPerRow = Math.floor(pageWidth / effectiveCardWidth);
+    console.log(`Cards per row: ${maxCardsPerRow} (calculated from page width ${pageWidth}mm including ${cardMargin}mm CSS margins)`);
+    
+    // Calculate actual layout with wrapping
+    const actualRows = Math.ceil(actualCards.length / maxCardsPerRow);
+    console.log(`Actual cards: ${actualCards.length}, will create ${actualRows} rows`);
+    
+    // Position each actual card with proper wrapping and centering per row
+    actualCards.forEach((cardHtml, cardIndex) => {
+      const row = Math.floor(cardIndex / maxCardsPerRow);
+      const col = cardIndex % maxCardsPerRow;
+      
+      // Calculate how many cards are in this specific row
+      const cardsInThisRow = Math.min(maxCardsPerRow, actualCards.length - (row * maxCardsPerRow));
+      
+      // Center each row individually (like CSS justify-content: center)
+      const rowWidth = cardsInThisRow * cardTotalWidth;
+      const rowStartX = (pageWidth - rowWidth) / 2;
+      
+      // Calculate card position within the centered row
+      const cardX = rowStartX + col * cardTotalWidth;
+      const cardY = (pageHeight - (actualRows * cardTotalHeight)) / 2 + row * cardTotalHeight;
+      
+      // The cutting line is positioned at the card boundary (excluding bleed)
+      const cutX = cardX + bleedWidth;
+      const cutY = cardY + bleedHeight;
+      
+      console.log(`  Card ${globalCardIndex} (local ${cardIndex}): row ${row}, col ${col}, cardsInRow ${cardsInThisRow}, position (${cutX.toFixed(2)}, ${cutY.toFixed(2)})`);
+      
+      positions.push({
+        page: pageIndex,
+        row: row,
+        col: col,
+        x: cutX,
+        y: cutY,
+        width: cardWidth,
+        height: cardHeight,
+        cardIndex: globalCardIndex
+      });
+      
+      globalCardIndex++; // Increment global card index after each card
+    });
+  });
+  
+  console.log(`Total positions calculated: ${positions.length}`);
+  return positions;
+}
+
+// ============================================================================
+// Silhouette Design File Generation
+// ============================================================================
+
+function parseMmToPx(mmValue) {
+  // Convert mm to pixels (assuming 96 DPI: 1mm = 3.779528 pixels)
+  const numValue = parseFloat(mmValue.replace('mm', ''));
+  return numValue * 3.779528;
+}
+
+function card_generate_silhouette_dxf_from_positions(cardPositions, options) {
+  if (!cardPositions || cardPositions.length === 0) {
+    throw new Error("No card positions available");
+  }
+
+  // Generate DXF header
+  let dxf = `0
+SECTION
+2
+HEADER
+9
+$ACADVER
+1
+AC1015
+9
+$HANDSEED
+5
+FFFF
+9
+$MEASUREMENT
+70
+1
+0
+ENDSEC
+0
+SECTION
+2
+TABLES
+0
+TABLE
+2
+LAYER
+5
+2
+100
+AcDbSymbolTable
+70
+1
+0
+LAYER
+5
+10
+100
+AcDbSymbolTableRecord
+100
+AcDbLayerTableRecord
+2
+CUT_LINES
+70
+0
+62
+1
+6
+CONTINUOUS
+0
+ENDTAB
+0
+ENDSEC
+0
+SECTION
+2
+ENTITIES
+`;
+
+  let entityHandle = 100;
+  
+  // Generate cutting lines for each card using exact positions
+  cardPositions.forEach((pos, index) => {
+    const cutX = pos.x;
+    const cutY = pos.y;
+    const cardWidth = pos.width;
+    const cardHeight = pos.height;
+    
+    if (options.rounded_corners) {
+      // For rounded corners, create a polyline with arc segments
+      const cornerRadius = 3; // 3mm corner radius
+      
+      // Create rounded rectangle using LWPOLYLINE with proper bulges for 90-degree arcs
+      // Bulge for 90-degree arc = tan(45°/4) = tan(11.25°) ≈ 0.414213562
+      const bulge90 = 0.414213562;
+      
+      dxf += `0
+LWPOLYLINE
+5
+${entityHandle.toString(16).toUpperCase()}
+100
+AcDbEntity
+8
+CUT_LINES
+100
+AcDbPolyline
+90
+8
+70
+1
+`;
+      
+      // Start at bottom-left corner (after radius), go counter-clockwise
+      // Bottom edge start
+      dxf += `10
+${(cutX + cornerRadius).toFixed(4)}
+20
+${cutY.toFixed(4)}
+42
+0
+`;
+      
+      // Bottom edge to bottom-right corner start
+      dxf += `10
+${(cutX + cardWidth - cornerRadius).toFixed(4)}
+20
+${cutY.toFixed(4)}
+42
+${bulge90}
+`;
+      
+      // Bottom-right corner to right edge start
+      dxf += `10
+${(cutX + cardWidth).toFixed(4)}
+20
+${(cutY + cornerRadius).toFixed(4)}
+42
+0
+`;
+      
+      // Right edge to top-right corner start
+      dxf += `10
+${(cutX + cardWidth).toFixed(4)}
+20
+${(cutY + cardHeight - cornerRadius).toFixed(4)}
+42
+${bulge90}
+`;
+      
+      // Top-right corner to top edge start
+      dxf += `10
+${(cutX + cardWidth - cornerRadius).toFixed(4)}
+20
+${(cutY + cardHeight).toFixed(4)}
+42
+0
+`;
+      
+      // Top edge to top-left corner start  
+      dxf += `10
+${(cutX + cornerRadius).toFixed(4)}
+20
+${(cutY + cardHeight).toFixed(4)}
+42
+${bulge90}
+`;
+      
+      // Top-left corner to left edge start
+      dxf += `10
+${cutX.toFixed(4)}
+20
+${(cutY + cardHeight - cornerRadius).toFixed(4)}
+42
+0
+`;
+      
+      // Left edge back to bottom-left corner start
+      dxf += `10
+${cutX.toFixed(4)}
+20
+${(cutY + cornerRadius).toFixed(4)}
+42
+${bulge90}
+`;
+    } else {
+      // Create a rectangular polyline for straight corners
+      dxf += `0
+LWPOLYLINE
+5
+${entityHandle.toString(16).toUpperCase()}
+100
+AcDbEntity
+8
+CUT_LINES
+100
+AcDbPolyline
+90
+4
+70
+1
+10
+${cutX.toFixed(4)}
+20
+${cutY.toFixed(4)}
+10
+${(cutX + cardWidth).toFixed(4)}
+20
+${cutY.toFixed(4)}
+10
+${(cutX + cardWidth).toFixed(4)}
+20
+${(cutY + cardHeight).toFixed(4)}
+10
+${cutX.toFixed(4)}
+20
+${(cutY + cardHeight).toFixed(4)}
+`;
+    }
+    
+    entityHandle++;
+  });
+  
+  // DXF footer
+  dxf += `0
+ENDSEC
+0
+EOF
+`;
+  
+  return dxf;
 }

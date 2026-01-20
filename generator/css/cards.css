@@ -19,7 +19,7 @@
 }
 
 .card.rounded-corners {
-    border-radius: 4px;
+    border-radius: 3mm;
 }
 
 .card.rounded-corners .card-content {

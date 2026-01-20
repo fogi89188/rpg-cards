@@ -2,6 +2,7 @@
 var card_data = [];
 var card_options = default_card_options();
 var app_settings = default_app_settings();
+var last_generated_positions = null; // Store card positions from last generation
 
 function default_app_settings() {
     return {
@@ -76,7 +77,10 @@ function ui_generate() {
     }
 
     // Generate output HTML
-    var { style, html, pages } = card_pages_generate_html(card_data, card_options);
+    var { style, html, pages, cardPositions } = card_pages_generate_html(card_data, card_options);
+    
+    // Store positions for DXF generation
+    last_generated_positions = cardPositions;
 
     // Open a new window for the output
     // Use a separate window to avoid CSS conflicts
@@ -91,6 +95,64 @@ function ui_generate() {
     setTimeout(function () {
         tab.postMessage({ style, html, pages, options: card_options }, '*');
     }, 500);
+}
+
+function ui_generate_design() {
+    console.log('=== GENERATE DESIGN DEBUG ===');
+    console.log('Current card_options:', card_options);
+    
+    if (card_data.length === 0) {
+        alert("Your deck is empty. Please define some cards first, or load the sample deck.");
+        return;
+    }
+    
+    if (!card_options.registration_marks) {
+        alert("Silhouette registration marks must be enabled to generate a design file.");
+        return;
+    }
+
+    if (!last_generated_positions) {
+        alert("Please click 'Generate' first to create the card layout, then try generating the design file.");
+        return;
+    }
+
+    try {
+        console.log('Using card positions from last generation:', last_generated_positions.length, 'cards');
+        
+        // Generate DXF using exact positions from the last generation
+        var dxfContent = card_generate_silhouette_dxf_from_positions(last_generated_positions, card_options);
+        
+        console.log('Generated DXF length:', dxfContent.length);
+        
+        // Create and download the DXF file
+        var blob = new Blob([dxfContent], { type: 'application/dxf' });
+        var url = URL.createObjectURL(blob);
+        
+        var downloadLink = document.createElement('a');
+        downloadLink.href = url;
+        downloadLink.download = 'cards-cutting-template.dxf';
+        downloadLink.style.display = 'none';
+        
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+        
+        URL.revokeObjectURL(url);
+        
+        showToast('DXF cutting template downloaded successfully! Import this file into Silhouette Studio for cutting.', 'success');
+        
+    } catch (error) {
+        console.error('Error generating design:', error);
+        alert('Error generating design file: ' + error.message);
+    }
+}
+
+function ui_toggle_generate_design_button() {
+    const showButton = card_options.registration_marks;
+    const buttonGroup = document.getElementById('generate-design-group');
+    if (buttonGroup) {
+        buttonGroup.style.display = showButton ? 'block' : 'none';
+    }
 }
 
 function ui_load_sample() {
@@ -1253,6 +1315,7 @@ $(document).ready(function () {
     });
 
     $("#button-generate").click(ui_generate);
+    $("#button-generate-design").click(ui_generate_design);
     $("#button-load").click(function () {
         $("#file-load").attr({
             'data-opening': '',
@@ -1382,6 +1445,11 @@ $(document).ready(function () {
     $("#card-rotate").click(ui_card_rotate);
     $("#background-color").change(ui_change_option);
     $("#rounded-corners").change(ui_change_option);
+    $("#crop-marks").change(ui_change_option);
+    $("#registration-marks").change(function() {
+        ui_change_option.call(this);
+        ui_toggle_generate_design_button();
+    });
     $("#back-bleed-width").on("input", ui_change_option);
     $("#back-bleed-height").on("input", ui_change_option);
     $("#back-bleed-rotate").click(ui_back_bleed_rotate);
@@ -1435,6 +1503,7 @@ $(document).ready(function () {
     $("#header-show-back").change(ui_change_card_property);
 
     ui_update_card_list();
+    ui_toggle_generate_design_button(); // Initialize Generate Design button visibility
     });
 });
 
