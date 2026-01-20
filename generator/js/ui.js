@@ -1051,7 +1051,27 @@ function local_store_save () {
                 localStorage.setItem('card_options', JSON.stringify(card_options));
                 localStorage.setItem('app_settings', JSON.stringify(app_settings));
             } catch (e){
-                console.error('Failed to save to localStorage:', e);
+                if (e.name === 'QuotaExceededError' || e.code === 22) {
+                    const dataSize = JSON.stringify(card_data_to_save).length;
+                    const quotaMB = (dataSize / 1024 / 1024).toFixed(2);
+
+                    showToast(
+                        `Storage limit exceeded (${quotaMB} MB). Your cards are too large to auto-save. ` +
+                        `Please use the "Save" button to download your cards as a file instead.`,
+                        'danger',
+                        10000
+                    );
+
+                    try {
+                        localStorage.removeItem('card_data');
+                        localStorage.setItem('card_options', JSON.stringify(card_options));
+                        localStorage.setItem('app_settings', JSON.stringify(app_settings));
+                    } catch (cleanupError) {
+                        console.error('Failed to save even minimal data:', cleanupError);
+                    }
+                } else {
+                    console.error('Failed to save to localStorage:', e);
+                }
             }
         }
     }
