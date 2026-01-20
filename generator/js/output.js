@@ -1,10 +1,15 @@
 var showCloseButton = true;
 
+var cardArrangement = 'doublesided';
+
 function receiveMessage(event) {
-    const { style, html } = event.data;
-    
+    const { style, html, options } = event.data;
+
     if (typeof html === 'string') {
         showCloseButton = false;
+        if (options && options.card_arrangement) {
+            cardArrangement = options.card_arrangement;
+        }
         insertCards(style, html, null);
     }
 }
@@ -60,30 +65,29 @@ function measureCardPositions() {
     const pageElements = document.querySelectorAll('.page');
 
     pageElements.forEach((pageElement, pageIndex) => {
+        // In doublesided mode, odd-indexed pages (1, 3, 5...) are back pages
+        // Skip them since cutting is the same for both front and back
+        if (cardArrangement === 'doublesided' && pageIndex % 2 === 1) {
+            return;
+        }
+
         const pageZoom = pageElement.querySelector('.page-zoom');
         if (!pageZoom) {
             return;
         }
-        
-        // Get page rect for coordinate conversion
+
         const pageRect = pageElement.getBoundingClientRect();
-        
-        // Get all card elements in this page
         const cardElements = pageZoom.querySelectorAll('.card');
-        
+
         cardElements.forEach((cardElement, cardLocalIndex) => {
             const cardRect = cardElement.getBoundingClientRect();
-            
-            // Convert from screen pixels to page-relative millimeters
-            // Assuming 96 DPI: 1mm = 3.779528 pixels
             const pixelsToMm = 25.4 / 96;
-            
-            // Offset from page origin (not page-zoom, but actual page for correct DXF coords)
+
             const offsetX = (cardRect.left - pageRect.left) * pixelsToMm;
             const offsetY = (cardRect.top - pageRect.top) * pixelsToMm;
             const width = cardRect.width * pixelsToMm;
             const height = cardRect.height * pixelsToMm;
-            
+
             positions.push({
                 page: pageIndex,
                 cardIndex: positions.length,
