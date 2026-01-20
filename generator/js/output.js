@@ -1,14 +1,15 @@
 var showCloseButton = true;
 
 function receiveMessage(event) {
-    const { style, html, pages, options } = event.data;
+    const { style, html } = event.data;
+    
     if (typeof html === 'string') {
         showCloseButton = false;
-        insertCards(style, html, () => {
-            cropMarks(pages, options);
-        });
+        insertCards(style, html, null);
     }
 }
+
+window.addEventListener('message', receiveMessage, false);
 
 function insertCards(style, html, callback) {
     (function waitForBody() {
@@ -16,6 +17,7 @@ function insertCards(style, html, callback) {
             requestAnimationFrame(waitForBody);
             return;
         }
+        
         while (document.body.hasChildNodes()) {
             document.body.removeChild(document.body.lastChild);
         }
@@ -30,12 +32,69 @@ function insertCards(style, html, callback) {
         // Auto-fit all card titles
         autofitCardTitles();
         
-        if (callback) {
-            requestAnimationFrame(() => {
-                requestAnimationFrame(callback);
-            });
-        }
+        // Measure positions after short delay to allow layout
+        setTimeout(() => {
+            const cardPositions = measureCardPositions();
+            
+            // Send back to parent window
+            if (window.opener) {
+                try {
+                    window.opener.postMessage({
+                        type: 'cardPositions',
+                        cardPositions: cardPositions
+                    }, '*');
+                } catch(e) {
+                    console.error('Failed to send positions:', e);
+                }
+            }
+            
+            if (callback) {
+                callback();
+            }
+        }, 1000);
     })();
+}
+
+function measureCardPositions() {
+    const positions = [];
+    const pageElements = document.querySelectorAll('.page');
+
+    pageElements.forEach((pageElement, pageIndex) => {
+        const pageZoom = pageElement.querySelector('.page-zoom');
+        if (!pageZoom) {
+            return;
+        }
+        
+        // Get page rect for coordinate conversion
+        const pageRect = pageElement.getBoundingClientRect();
+        
+        // Get all card elements in this page
+        const cardElements = pageZoom.querySelectorAll('.card');
+        
+        cardElements.forEach((cardElement, cardLocalIndex) => {
+            const cardRect = cardElement.getBoundingClientRect();
+            
+            // Convert from screen pixels to page-relative millimeters
+            // Assuming 96 DPI: 1mm = 3.779528 pixels
+            const pixelsToMm = 25.4 / 96;
+            
+            // Offset from page origin (not page-zoom, but actual page for correct DXF coords)
+            const offsetX = (cardRect.left - pageRect.left) * pixelsToMm;
+            const offsetY = (cardRect.top - pageRect.top) * pixelsToMm;
+            const width = cardRect.width * pixelsToMm;
+            const height = cardRect.height * pixelsToMm;
+            
+            positions.push({
+                page: pageIndex,
+                cardIndex: positions.length,
+                x: offsetX,
+                y: offsetY,
+                width: width,
+                height: height
+            });
+        });
+    });
+    return positions;
 }
 
 function autofitCardTitles() {
@@ -59,8 +118,6 @@ function autofitCardTitles() {
         }
     });
 }
-
-window.addEventListener("message", receiveMessage, false);
 
 setTimeout(function(){
     if (showCloseButton) {

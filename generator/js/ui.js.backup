@@ -6,13 +6,8 @@ var last_generated_positions = null; // Store card positions from last generatio
 var output_window = null; // Store reference to output window
 var positions_ready = false; // Track whether positions have been received
 
-window.addEventListener('message', function(event) {
-    if (event.data && event.data.type === 'cardPositions') {
-        last_generated_positions = event.data.cardPositions || [];
-        positions_ready = last_generated_positions.length > 0;
-        ui_toggle_generate_design_button();
-    }
-}, false);
+console.log('[MAIN] Script initialized');
+console.log('[MAIN] Note: Positions will be stored in localStorage by output window');
 
 function default_app_settings() {
     return {
@@ -24,6 +19,36 @@ function default_app_settings() {
     }
 }
 
+function mergeSort(arr, compare) {
+    if (arr.length < 2)
+        return arr;
+
+    var middle = parseInt(arr.length / 2);
+    var left = arr.slice(0, middle);
+    var right = arr.slice(middle, arr.length);
+
+    return merge(mergeSort(left, compare), mergeSort(right, compare), compare);
+}
+
+function merge(left, right, compare) {
+    var result = [];
+
+    while (left.length && right.length) {
+        if (compare(left[0], right[0]) <= 0) {
+            result.push(left.shift());
+        } else {
+            result.push(right.shift());
+        }
+    }
+
+    while (left.length)
+        result.push(left.shift());
+
+    while (right.length)
+        result.push(right.shift());
+
+    return result;
+}
 
 function swapInputValues(id1, id2) {
     const field1 = getField(id1);
@@ -48,31 +73,62 @@ function swapInputValues(id1, id2) {
 }
 
 function ui_generate() {
+    console.log('[MAIN] ui_generate() called');
+    console.log('[MAIN] Current card_options:', card_options);
+    
     if (card_data.length === 0) {
         alert("Your deck is empty. Please define some cards first, or load the sample deck.");
         return;
     }
 
+    // Reset positions since we're generating a fresh layout
     positions_ready = false;
     last_generated_positions = null;
-    ui_toggle_generate_design_button();
+    console.log('[MAIN] Positions reset, button disabled temporarily');
+    ui_toggle_generate_design_button(); // Disable button temporarily
 
+    // Generate output HTML
+    console.log('[MAIN] Calling card_pages_generate_html...');
     var { style, html, pages, cardPositions } = card_pages_generate_html(card_data, card_options);
+    
+    // Initial positions will be replaced once the output window measures actual rendering
     last_generated_positions = cardPositions;
+    console.log('[MAIN] Generated HTML, initial positions:', cardPositions.length);
 
+    // Open a new window for the output
+    // Use a separate window to avoid CSS conflicts
+    console.log('[MAIN] Opening output window...');
     output_window = window.open("output.html", 'rpg-cards-output');
 
     if (!output_window || output_window.closed || typeof output_window.closed === 'undefined') {
         alert(`It looks like your browser blocked the popup window. Please allow popups for this site to continue.`)
         return;
     }
+    
+    console.log('[MAIN] Output window opened successfully');
 
+    // Send the generated HTML to the new window
+    // Use a delay to give the new window time to set up a message listener
+    console.log('[MAIN] Scheduling message to output window in 500ms...');
     setTimeout(function () {
+        console.log('[MAIN] Sending message to output window...');
+        console.log('[MAIN] output_window is:', output_window);
         output_window.postMessage({ style, html, pages, options: card_options }, '*');
+        console.log('[MAIN] Message sent');
+        
+        // Enable button after 3 seconds (enough time for output to measure and store)
+        setTimeout(function() {
+            positions_ready = true;
+            ui_toggle_generate_design_button();
+            console.log('[MAIN] Button enabled - positions should be in localStorage');
+        }, 3000);
     }, 500);
 }
 
 function ui_generate_design() {
+    console.log('[MAIN] ui_generate_design() called');
+    console.log('[MAIN] Current card_options:', card_options);
+    
     if (card_data.length === 0) {
         alert("Your deck is empty. Please define some cards first, or load the sample deck.");
         return;
@@ -83,13 +139,34 @@ function ui_generate_design() {
         return;
     }
 
+    // Try to get positions from localStorage (set by output window)
+    console.log('[MAIN] Checking localStorage for positions...');
+    const storedPositions = localStorage.getItem('rpg-cards-positions');
+    
+    if (storedPositions) {
+        try {
+            last_generated_positions = JSON.parse(storedPositions);
+            positions_ready = last_generated_positions && last_generated_positions.length > 0;
+            console.log('[MAIN] Got positions from localStorage:', last_generated_positions.length, 'cards');
+        } catch(e) {
+            console.error('[MAIN] Failed to parse stored positions:', e);
+            last_generated_positions = null;
+            positions_ready = false;
+        }
+    }
+
     if (!positions_ready || !last_generated_positions || last_generated_positions.length === 0) {
-        alert("Waiting for card positions to be measured from the output window...\n\nPlease click 'Generate' first to create the card layout. The output window measures actual card positions. Once ready, you can generate the design file.");
+        alert("Waiting for card positions to be measured from the output window...\n\nPlease click 'Generate' first to create the card layout. The output window measures actual card positions, which takes a moment. Once ready, you can generate the design file.");
         return;
     }
 
     try {
+        console.log('Using card positions from last generation:', last_generated_positions.length, 'cards');
+        
+        // Generate DXF using exact positions from the last generation
         var dxfContent = card_generate_silhouette_dxf_from_positions(last_generated_positions, card_options);
+        
+        console.log('Generated DXF length:', dxfContent.length);
         
         // Create and download the DXF file
         var blob = new Blob([dxfContent], { type: 'application/dxf' });
@@ -135,6 +212,9 @@ function ui_toggle_generate_design_button() {
 }
 
 function ui_load_sample() {
+    // card_data = card_data_example;
+    // ui_init_cards(card_data);
+    // ui_update_card_list();
     const firstAddedCardIndex = card_data.length;
     ui_add_cards(card_data_example);
     ui_select_card_by_index(firstAddedCardIndex);
@@ -328,14 +408,14 @@ function ui_selected_card() {
 function ui_delete_card() {
     var index = ui_selected_card_index();
     if (index === -1) return;
-    const shouldDelete = document.getElementById('ask-before-delete').checked ? confirm('Delete ' + card_data[index].title + '?') : true;
-    if (!shouldDelete) return;
+    const proceed = document.getElementById('ask-before-delete').checked ? confirm('Delete ' + card_data[index].title + '?') : true;
+    if (!proceed) return;
     card_data.splice(index, 1);
     ui_update_card_list();
     ui_select_card_by_index(Math.min(index, card_data.length - 1));
 }
 
-function ui_deck_option_text(card) {
+const ui_deck_option_text = (card) => {
     return `${card.count}x ${card.title}`;
 }
 
@@ -345,15 +425,17 @@ function ui_update_card_list() {
     }, 0)} in total.`);
 
     const $deck = $('#deck-cards-list');
+
     $deck.children().each(function() {
         const option = this;
         if (!card_data.find(card => card.uuid === option.getAttribute('data-uuid'))) option.remove();
     });
 
     let i = card_data.length;
+
     while (i--) {
         var card = card_data[i];
-        const $option = $deck.find(`[data-uuid="${card.uuid}"]`);
+        $option = $deck.find(`[data-uuid="${card.uuid}"]`);
         if (!$option.length) {
             $deck.prepend(`<div class="radio" data-uuid="${card.uuid}"><label><input type="radio" name="deck-option" value="${i}"> <span class="text">${ui_deck_option_text(card)}</span></label></div>`);
         } else if ($option.index() === i) {
@@ -373,6 +455,7 @@ async function ui_save_file() {
         delete card.uuid;
         return card;
     });
+    // Save both card data and options
     const saveData = {
         card_data: data,
         card_options: card_options
@@ -510,8 +593,15 @@ function search_clear_button_init(button) {
     });
 }
 
+// function ui_filter_selected_card_title_clear() {
+//     $('#deck-cards-list-title-filter').focus().val('');
+//     ui_filter_selected_card_title();
+// }
+
 function ui_update_card_actions() {
     var action_groups = {};
+
+    // Group actions by category
     for (var function_name in card_action_info) {
         var info = card_action_info[function_name];
         if (!action_groups[info.category]) {
@@ -642,29 +732,31 @@ function ui_change_option() {
     }
     switch (property) {
         case 'card_size': {
-            card_options[property] = value;
-            // Only update width/height if a preset is selected
-            // If value is empty (custom size), preserve existing width/height
-            if (value) {
-                let w, h;
-                [w, h] = value.split(',');
-                var width = '', height = '';
-                var landscape = isLandscape(w, h);
-                if (landscape) {
-                    width = h;  height = w;
-                } else {
-                    width = w;  height = h;
-                }
-                card_options['card_width'] = width;
-                card_options['card_height'] = height;
-                $('#card-width').val(width).trigger("input");
-                $('#card-height').val(height).trigger("input");
-                if (card_options['page_zoom_width'] === '100' && card_options['page_zoom_height'] === '100') {
-                    $('#card-zoom-width').val(width);
-                    $('#card-zoom-height').val(height);
-                } else {
-                    $('#card-zoom-width').trigger('input');
-                }
+            const changed = card_options[property] !== value;
+            let w, h;
+            if (changed) {
+                card_options[property] = value;
+                [w, h] = value ? value.split(',') : ['', ''];
+            } else {
+                w = card_options['card_width'];
+                h = card_options['card_height'];
+            }
+            var width = '', height = '';
+            var landscape = isLandscape(w, h);
+            if (landscape) {
+                width = h;  height = w;
+            } else {
+                width = w;  height = h;
+            }
+            card_options['card_width'] = width;
+            card_options['card_height'] = height;
+            $('#card-width').val(width).trigger("input");
+            $('#card-height').val(height).trigger("input");
+            if (card_options['page_zoom_width'] === '100' && card_options['page_zoom_height'] === '100') {
+                $('#card-zoom-width').val(width);
+                $('#card-zoom-height').val(height);
+            } else {
+                $('#card-zoom-width').trigger('input');
             }
             break;
         }
@@ -995,49 +1087,70 @@ function ui_download_card(face = 'front') {
     });
 }
 
-function ui_apply_default_property(cardProperty, defaultProperty) {
-    card_data.forEach(card => {
-        card[cardProperty] = card_options[defaultProperty];
-    });
+function ui_apply_default_color_front() {
+    const k = 'color_front';
+    const v = card_options.default_color_front;
+    card_data.forEach(card => { card[k] = v; }); 
     ui_update_selected_card();
 }
 
-function ui_apply_default_color_front() {
-    ui_apply_default_property('color_front', 'default_color_front');
-}
-
 function ui_apply_default_color_back() {
-    ui_apply_default_property('color_back', 'default_color_back');
+    const k = 'color_back';
+    const v = card_options.default_color_back;
+    card_data.forEach(card => { card[k] = v; }); 
+    ui_update_selected_card();
 }
 
 function ui_apply_default_title_color() {
-    ui_apply_default_property('title_color', 'default_title_color');
+    const k = 'title_color';
+    const v = card_options.default_title_color;
+    card_data.forEach(card => { card[k] = v; }); 
+    ui_update_selected_card();
 }
 
 function ui_apply_default_font_card() {
-    ui_apply_default_property('card_font_size', 'default_card_font_size');
+    const k = 'card_font_size';
+    const v = card_options.default_card_font_size;
+    card_data.forEach(card => { card[k] = v; }); 
+    ui_update_selected_card();
 }
 
 function ui_apply_default_icon_front() {
-    ui_apply_default_property('icon_front', 'default_icon_front');
+    const k = 'icon_front';
+    const v = card_options.default_icon_front;
+    card_data.forEach(card => { card[k] = v; }); 
+    ui_update_selected_card();
 }
 
 function ui_apply_default_icon_back() {
-    ui_apply_default_property('icon_back', 'default_icon_back');
+    const k = 'icon_back';
+    const v = card_options.default_icon_back;
+    card_data.forEach(card => { card[k] = v; }); 
+    ui_update_selected_card();
 }
 
 function ui_apply_default_icon_back_container() {
-    ui_apply_default_property('icon_back_container', 'default_icon_back_container');
+    const k = 'icon_back_container';
+    const v = card_options.default_icon_back_container;
+    card_data.forEach(card => { card[k] = v; }); 
+    ui_update_selected_card();
 }
 
 function ui_apply_default_icon_back_rotation() {
-    ui_apply_default_property('icon_back_rotation', 'default_icon_back_rotation');
+    const k = 'icon_back_rotation';
+    const v = card_options.default_icon_back_rotation;
+    card_data.forEach(card => { card[k] = v; }); 
+    ui_update_selected_card();
 }
 
 function ui_apply_default_card_background() {
-    ui_apply_default_property('background_image', 'default_background_image');
+    const k = 'background_image';
+    const v = card_options.default_background_image;
+    card_data.forEach(card => { card[k] = v; }); 
+    ui_update_selected_card();
 }
 
+//Adding support for local store
 function local_store_save () {
     function save() {
        if(window.localStorage){
@@ -1051,11 +1164,14 @@ function local_store_save () {
                 localStorage.setItem('card_options', JSON.stringify(card_options));
                 localStorage.setItem('app_settings', JSON.stringify(app_settings));
             } catch (e){
-                console.error('Failed to save to localStorage:', e);
+                //if the local store save failed should we notify the user that the data is not being saved?
+                console.log(e);
             }
         }
     }
+    // Replace this function with its debounced version
     local_store_save = debounce(save, 500);
+    // Call it immediately with the first invocation’s arguments
     return local_store_save.apply(this, arguments);
 }
 
@@ -1118,8 +1234,10 @@ function local_store_load() {
                 app_settings = legacy_app_settings(storedSettings);
             }
         } catch (e){
-            showToast('Error loading from localStorage', 'danger');
-            console.error('Failed to load from localStorage:', e);
+            //if the local store load failed should we notify the user that the data load failed?
+            showToast('Error loading from localStorage', 'danger')
+            console.error(e);
+
         }
     }
 }
@@ -1195,10 +1313,6 @@ $(document).ready(function () {
     function ui_set_page_tab_values(options) {
        $("#card-size").val(options.card_size);
        $("#card-size").change();
-       // Restore custom card dimensions after the dropdown change event
-       // This ensures custom values are preserved when loading from localStorage
-       $("#card-width").val(options.card_width).trigger("input");
-       $("#card-height").val(options.card_height).trigger("input");
        $("#card-arrangement").val(options.card_arrangement).change();
        $("#page-rows").val(options.page_rows).change();
        $("#page-columns").val(options.page_columns).change();
@@ -1619,8 +1733,29 @@ function applyAutoSizeTextGeneric(textareaId, cardPropertyName, inputId, side = 
     }
 }
 
+// Auto Size Text functionality - kept for backwards compatibility
 function applyAutoSizeText() {
     applyAutoSizeTextGeneric('card-contents', 'card_font_size', 'card-font-size', 'front');
+}
+
+// Simple toast notification function
+function showToast(message, type = 'success') {
+    var toastContainer = document.getElementById('toast-container');
+    if (!toastContainer) return;
+    
+    var toast = document.createElement('div');
+    toast.className = 'alert alert-' + type + ' alert-dismissible';
+    toast.style.cssText = 'margin-bottom: 10px; max-width: 300px;';
+    toast.innerHTML = message + '<button type="button" class="close" onclick="this.parentElement.remove()"><span>&times;</span></button>';
+    
+    toastContainer.appendChild(toast);
+    
+    // Auto-remove after 3 seconds
+    setTimeout(function() {
+        if (toast.parentNode) {
+            toast.parentNode.removeChild(toast);
+        }
+    }, 3000);
 }
 
 // Theme toggle: consistent dark mode using CSS variables and persistent user preference

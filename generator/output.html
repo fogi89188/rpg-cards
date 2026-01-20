@@ -17,8 +17,10 @@
     <link rel="stylesheet" type="text/css" href="lib/bootstrap/css/bootstrap-theme.min.css" />
     <!-- Library: DOMPurify -->
     <script type="text/javascript" src="lib/dompurify/purify.min.js" charset="utf-8"></script>
-    <!-- Library: html-to-image -->
-    <script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.js"></script>
+    <!-- Test script execution -->
+    <script type="text/javascript">
+        console.log('[INLINE TEST] This inline script is running in output.html');
+    </script>
     <!-- Javascript -->
     <script type="text/javascript" src="js/output.js?"></script>
     <!-- Fonts -->
@@ -34,6 +36,12 @@
     <link href="css/style.css" rel="stylesheet" />
 </head>
 <body class="page-background">
+    <div id="debug-info" style="position: fixed; top: 10px; left: 10px; background: yellow; padding: 10px; z-index: 9999; max-width: 500px; word-wrap: break-word; font-family: monospace; font-size: 12px;">
+        Loading...
+    </div>
     <button onclick="window.close();" id="close-button" style="display: none; margin: 50vh auto 0 auto; transform: translateY(-50%);">Close</button>
+    <script type="text/javascript">
+        document.getElementById('debug-info').innerHTML += '<br>[VISIBLE] output.html loaded, inline script running';
+    </script>
 </body>
 </html>
