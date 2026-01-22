@@ -1041,37 +1041,12 @@ function ui_apply_default_card_background() {
 function local_store_save () {
     function save() {
        if(window.localStorage){
-            const card_data_to_save = card_data.map(c => {
-                const card = { ...c };
-                delete card.uuid;
-                return card;
-            });
             try {
-                localStorage.setItem('card_data', JSON.stringify(card_data_to_save));
+                // Only save lightweight settings, not card data (which can be very large with images)
                 localStorage.setItem('card_options', JSON.stringify(card_options));
                 localStorage.setItem('app_settings', JSON.stringify(app_settings));
             } catch (e){
-                if (e.name === 'QuotaExceededError' || e.code === 22) {
-                    const dataSize = JSON.stringify(card_data_to_save).length;
-                    const quotaMB = (dataSize / 1024 / 1024).toFixed(2);
-
-                    showToast(
-                        `Storage limit exceeded (${quotaMB} MB). Your cards are too large to auto-save. ` +
-                        `Please use the "Save" button to download your cards as a file instead.`,
-                        'danger',
-                        10000
-                    );
-
-                    try {
-                        localStorage.removeItem('card_data');
-                        localStorage.setItem('card_options', JSON.stringify(card_options));
-                        localStorage.setItem('app_settings', JSON.stringify(app_settings));
-                    } catch (cleanupError) {
-                        console.error('Failed to save even minimal data:', cleanupError);
-                    }
-                } else {
-                    console.error('Failed to save to localStorage:', e);
-                }
+                console.error('Failed to save to localStorage:', e);
             }
         }
     }
@@ -1125,10 +1100,9 @@ function legacy_app_settings(data = {}) {
 function local_store_load() {
     if(window.localStorage){
         try {
-            const storedCards = JSON.parse(localStorage.getItem("card_data"));
-            if (storedCards) {
-                card_data = legacy_card_data(storedCards)
-            }
+            // Clear any old card_data from localStorage (no longer used - too large with images)
+            localStorage.removeItem('card_data');
+
             const storedOptions = JSON.parse(localStorage.getItem("card_options"));
             if (storedOptions) {
                 card_options = legacy_card_options(storedOptions);

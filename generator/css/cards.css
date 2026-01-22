@@ -536,10 +536,11 @@
 }
 
 /* Silhouette Cameo Registration Marks */
+/* Inner corner of L-shape is at 10mm from paper edge */
 :root {
-    --reg-mark-size: 5.5mm;
-    --reg-mark-offset: 9.5mm;
-    --reg-mark-line-width: 1mm;
+    --reg-mark-size: 5mm;
+    --reg-mark-offset: 9.75mm;
+    --reg-mark-line-width: 0.5mm;
 }
 
 .registration-mark {

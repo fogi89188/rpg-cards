@@ -1604,13 +1604,17 @@ function card_pages_wrap(pages, options) {
     var offsetY = (maxHeight - gridHeight) / 2;
 
     // Build absolutely positioned card grid
+    // For double-sided back pages, mirror horizontally (right-to-left) so backs align with fronts when printed
+    var isBackPage = options.card_arrangement === "doublesided" && i % 2 === 1;
     var absGridStyle = `position: relative; width: ${maxWidth}mm; height: ${maxHeight}mm; margin: 0 auto;`;
     var absCards = '';
     for (var cardIdx = 0; cardIdx < totalCards; cardIdx++) {
       var row = Math.floor(cardIdx / usedCols);
       var col = cardIdx % usedCols;
       if (row >= usedRows) break;
-      var left = offsetX + col * cardWidthNum;
+      // Mirror column position for back pages
+      var displayCol = isBackPage ? (usedCols - 1 - col) : col;
+      var left = offsetX + displayCol * cardWidthNum;
       var top = offsetY + row * cardHeightNum;
       absCards += `<div style=\"position:absolute; left:${left}mm; top:${top}mm; width:${cardWidthNum}mm; height:${cardHeightNum}mm;\">${pages[i][cardIdx]}</div>`;
     }
@@ -1732,25 +1736,12 @@ function card_generate_silhouette_dxf_from_positions(cardPositions, options) {
     throw new Error("No card positions available");
   }
 
-  // Bleed values so we can cut on the finished card edge instead of the bleed edge
   const bleedWidthMm = parseToMm(options.back_bleed_width || 0);
   const bleedHeightMm = parseToMm(options.back_bleed_height || 0);
 
-  // Page + orientation info so DXF matches what gets printed.
+  // Use page dimensions directly - no rotation transformation needed
   const pageWidthMm = parseToMm(options.page_width);
   const pageHeightMm = parseToMm(options.page_height);
-  const isLandscape = getOrientation(pageWidthMm, pageHeightMm) === 'landscape';
-  const dxfWidth = isLandscape ? pageHeightMm : pageWidthMm;
-  const dxfHeight = isLandscape ? pageWidthMm : pageHeightMm;
-
-  // Mimic the print-time rotate(-90deg) translateX(-100%) applied to landscape pages.
-  const transformPoint = (x, y) => {
-    if (!isLandscape) return { x, y };
-    return {
-      x: y,
-      y: pageWidthMm - x
-    };
-  };
 
   const addLwPolyline = (points, handle) => {
     dxf += `0
@@ -1770,11 +1761,10 @@ ${points.length}
 `;
 
     points.forEach((pt) => {
-      const { x, y } = transformPoint(pt.x, pt.y);
       dxf += `10
-${x.toFixed(4)}
+${pt.x.toFixed(4)}
 20
-${y.toFixed(4)}
+${pt.y.toFixed(4)}
 `;
       if (typeof pt.bulge !== 'undefined') {
         dxf += `42
@@ -1841,9 +1831,9 @@ $PLIMMIN
 9
 $PLIMMAX
 10
-${dxfWidth.toFixed(4)}
+${pageWidthMm.toFixed(4)}
 20
-${dxfHeight.toFixed(4)}
+${pageHeightMm.toFixed(4)}
 0
 ENDSEC
 0
