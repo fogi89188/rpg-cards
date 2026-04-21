@@ -177,7 +177,11 @@ var autoBoldRules = [
         replacement: '<b>$1</b>',
     },
     {
-        pattern: /\b(ability scores?|ability)\b/gi,
+        pattern: /\b(ability scores?)\b/gi,
+        replacement: '<b>$1</b>',
+    },
+    {
+        pattern: /\b(abilit(y|ies))\b/gi,
         replacement: '<b>$1</b>',
     },
     {
