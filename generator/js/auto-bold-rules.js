@@ -39,10 +39,6 @@ var autoBoldRules = [
         replacement: '<b>$1</b>',
     },
     {
-        pattern: /\b(bonus)\b/gi,
-        replacement: '<b>$1</b>',
-    },
-    {
         pattern: /\b(proficiency|proficient|expertise)\b/gi,
         replacement: '<b>$1</b>',
     },
@@ -96,6 +92,10 @@ var autoBoldRules = [
     },
     {
         pattern: /\b((bonus|free)?\s+actions?|reactions?|interactions?)\b/gi,
+        replacement: '<b>$1</b>',
+    },
+    {
+        pattern: /\b(bonus)\b/gi,
         replacement: '<b>$1</b>',
     },
     {
