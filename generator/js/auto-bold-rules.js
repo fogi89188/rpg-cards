@@ -43,7 +43,7 @@ var autoBoldRules = [
         replacement: '<b>$1</b>',
     },
     {
-        pattern: /\b(proficiency)\b/gi,
+        pattern: /\b(proficiency|proficient|expertise)\b/gi,
         replacement: '<b>$1</b>',
     },
     {
@@ -160,6 +160,10 @@ var autoBoldRules = [
         replacement: '<b>$1</b>',
     },
     {
+        pattern: /\b(Acrobatics|Animal Handling|Arcana|Athletics|Deception|History|Insight|Investigation|Medicine|Nature|Perception|Performance|Persuasion|Religion|Sleight of Hand|Stealth|Survival)\b/gi,
+        replacement: '<b>$1</b>',
+    },
+    {
         pattern: /\b(blind(ed)?|charm(ed)?|deaf(ened)?|frightened|(grapple)d?|incapacitated?|invisible|paralyzed?|petrif(y|ied)?|poison(ed)?|prone|restrain(ed)?|stun(ned)?|unconscious|exhaust(ed|ion)?)\b/gi,
         replacement: '<b>$1</b>',
     },
@@ -170,6 +174,10 @@ var autoBoldRules = [
     },
     {
         pattern: /\b(cantrips?|rituals?|concentration|spell\s+(slots?)?\s+(levels?))\b/gi,
+        replacement: '<b>$1</b>',
+    },
+    {
+        pattern: /\b(ability)\b/gi,
         replacement: '<b>$1</b>',
     },
     {
